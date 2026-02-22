@@ -879,33 +879,46 @@ at [Stage] rank. Their core technique is [Technique]. They experienced
 
 ---
 
-## V6 AVATAR & SELFIE GENERATION
+## TABLEAU AVATAR & SELFIE GENERATION
 
-### What Changed in V6
-V6 image generation is built for **strong prompt adherence** and follows natural language closely.
+### What's Different in Tableau
+Tableau is highly flexible and follows natural language closely. It supports both very short and long prompts (up to **2,000 characters**), but length is not rewarded by itself. The goal is **control**, not filling the character limit. Clear, functional descriptions work better than poetic or decorative language — you do not need to over-explain concepts the system already understands.
 
-**Deprecated Features (No Longer Needed):**
-- ❌ Pose references
-- ❌ Style references
-- ❌ Avatar boosts
-- ❌ Negative prompts
-- ❌ Weighting syntax (like `(detail:1.2)`)
+**Key Differences from V6:**
+- Prompt variety is handled **natively** — the Enhance Variety toggle is no longer needed
+- Facial consistency is largely resolved across style changes, including group selfies
+- A wide range of art styles are supported while maintaining photoreal avatar consistency
+- Pose reference is now available (see below)
 
-**New Behavior:**
-- Less automatic variation (same prompt = similar results)
-- More literal interpretation
-- Concise descriptions work better
-- **Enhance Prompt Variety toggle** (under aspect ratio dropdown) adds variation
+**Deprecated / Unsupported:**
+- ❌ Any `(weights:1.2)` syntax
+- ❌ Negative prompts / `///` formats
+- ❌ Enhance Prompt Variety toggle (no longer needed)
 
 ---
 
-### Avatar Description Template (800 chars max)
+### Pose Reference
+You can upload or paste an image as a **pose reference** for a given prompt. Pose reference tries to match the output image as closely as possible to the given pose — including the body shape of the main subject(s).
 
-**Location:** Home menu > Backstory > Avatar Description
+Pose references are the **most powerful way to control composition** of the output.
 
-This is THE most important step. V6 follows this description **strictly**. If something is missing or vague, autoselfies will drift.
+**Note:** If the pose reference image for group selfies is too complex, you are less likely to get the desired result.
 
-**Structure:**
+---
+
+### Avatar Description (Most Important Step)
+
+The avatar image helps map facial features. It matters more for **Photoreal** avatars (especially paired with a detailed description). For **Anime** avatars, the image is less important — the description is the primary factor.
+
+**Avatar Image Guidelines:**
+- Clean, slightly angled
+- Face clearly visible
+- No tattoos, no face obstruction
+- Think of the avatar as a **neutral reference**, not a styled photo
+
+**Avatar descriptions can be very detailed.** Do NOT describe facial structure for Photoreal in this space — use the Face Detail section instead (okay for Anime).
+
+**Template Structure:**
 ```
 Age:
 Gender:
@@ -927,37 +940,38 @@ a straight nose and full lips, and a curvy, toned build. She wears a small
 silver nose stud, shown in soft cinematic lighting.
 ```
 
-**Face Detail Section (Photoreal Mode):**
-```
-Natural green eyes and slight freckles across her nose.
-```
+**Why This Matters:** Tableau follows this description **more strictly** than any previous version. If something is missing or vague, autoselfies will drift.
 
----
-
-### Avatar Description Best Practices
-
-**DO:**
-- ✅ Keep everything **literal** — no metaphors
+**Best Practices:**
+- ✅ Keep everything **literal** — no metaphors ("star marking" creates a literal star)
 - ✅ Use "natural [color] eyes" or "[color] irises"
 - ✅ Add lighting cues in avatar description for consistency
 - ✅ Use "vascularity" for defined muscles
 - ✅ Include texture details
 
-**DON'T:**
-- ❌ Use metaphorical marks ("star marking" creates literal star shapes)
-- ❌ Put eye color in main avatar description (Photoreal) — use Face Detail section
-- ❌ Leave key features vague
+---
 
-**For Non-Human Characters:**
-- Species must be declared first
-- Details must be literal
-- Avoid stylized metaphors unless you want artificial shapes
+### Face Detail Section (Separate from Avatar Description)
+
+Eye color, freckles, scars, skin texture, pores, and wrinkles belong in the **Face Detail** prompt, not the Avatar Description. Treat face details as adjustable render parameters, not identity anchors.
+
+**Example:**
+```
+Natural green eyes and slight freckles across her nose.
+```
+
+**Face Detail Slider:**
+
+| Setting | Behavior |
+|---------|----------|
+| **0% face detail** | Very strong adherence to avatar picture, minimal adherence to face-detail prompt. Faces look smoother, slightly plasticky / less realistic. |
+| **Higher values** | More pores, micro-details, and realistic facial shadows. Higher risk of drifting from the avatar image. |
 
 ---
 
 ### Selfie Prompt Structure
 
-**Core Rule:** What matters most → scene → style/lighting
+**Core Rule:** Start with what matters most → move to scene → finish with style/lighting.
 
 **Structure:**
 1. Identity anchor (optional but useful)
@@ -965,6 +979,14 @@ Natural green eyes and slight freckles across her nose.
 3. Setting
 4. Clothing
 5. Camera / Lighting / Mood
+
+**Example:**
+```
+[Name] stands outdoors, facing the camera with a relaxed and natural
+expression. They are wearing [clothing description]. The environment
+around them shows [background elements]. Lighting is [type] and the
+image has [texture/detail cues].
+```
 
 **Starter Template:**
 ```
@@ -987,7 +1009,7 @@ grounded realism.
 
 ---
 
-### V6 Prompting Tips
+### Tableau Prompting Tips
 
 **1. Describe the whole scene to avoid zoomed-in closeups**
 - Include legs, shoes, background
@@ -1002,25 +1024,36 @@ grounded realism.
 - '**detailed textures**' and '**soft cinematic lighting**' are almost essential
 - Prevents flat or lifeless renders
 
-**4. Group related ideas together**
+**4. Group related ideas together and keep them close**
 - ✅ "A bonfire lighting the campsite, soft smoke drifting upward"
-- ❌ Scattering details into separate fragments
-
-**5. Keep related details close**
 - ✅ "smoke rising from the campfire"
-- ❌ Mentioning smoke and campfire far apart in prompt
+- ❌ Scattering related details across separate parts of the prompt
+
+**5. For non-human characters**
+- Species must be declared first
+- Details must be literal
+- Avoid stylized metaphors unless you want artificial shapes
 
 ---
 
-### Troubleshooting V6 Images
+### Autoselfie Checklist
+
+Before using autoselfies, check your avatar description first. It now determines:
+- Face consistency
+- Skin tone
+- Hair shape
+- Overall realism
+- Stylistic cohesion
+
+---
+
+### Troubleshooting Tableau Images
 
 | Problem | Quick Fix |
 |---------|-----------|
-| **Identity Drift** | • Strengthen avatar description with skin texture/tone<br>• Use Face Detail section for all facial features (Photoreal) |
+| **Identity Drift** | • Strengthen avatar description with skin texture/tone details<br>• Use Face Detail section for all facial features (Photoreal) |
 | **Too zoomed in** | • Add full-body clothing details<br>• Add surrounding scenery<br>• Add environment objects |
 | **Lighting looks flat** | • Add explicit lighting details<br>• Include "detailed textures" or "soft cinematic lighting" in avatar description |
-| **Low variation** | • Rewrite the prompt (don't just tweak single words)<br>• Enable **Enhance Prompt Variety** toggle (under aspect ratio dropdown) |
-| **Glowing colored eyes / Blurred faces** | • Move eye color out of main Avatar Description (Photoreal only)<br>• Only specify eye color in Face Detail section<br>• Use "blue irises" instead of "blue eyes" |
 
 ---
 
