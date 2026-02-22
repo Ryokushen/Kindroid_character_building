@@ -21,39 +21,50 @@ This document provides essential guidelines for creating Kindroid characters **o
 
 ---
 
-## V8.5 MODEL OVERVIEW
+## Reverie (V8.5) LLM Guide
 
-V8.5 is the **current flagship model** — a hybrid with built-in reasoning capabilities. It combines the creativity of V8 with the stability of V6.
+### V8.5 LLM Quick-Start Guide
+
+V8.5 is a **hybrid model with built-in reasoning capabilities**. Reasoning can take longer to process and may subtly change behavior. The default is none.
 
 ### Reasoning Effort Slider (Speed vs. Depth)
 Location: Click the LLM version icon in the upper right corner of the homepage.
 
-| Setting | Description | Best For |
-|---------|-------------|----------|
-| **Speedy (None)** | Immediate answers, no extra thinking | Quick exchanges, casual chat |
-| **Moderate** | Bit more thinking, more accurate | Daily conversations |
-| **Slow** | Longer thinking, considers more details | Complex roleplay scenes |
-| **Very Slow** | Maximum reasoning time | Deep, nuanced, technical questions |
+The reasoning slider controls how much "thinking time" the AI gets before responding.
 
-### V8.5 Baseline Setup
-1. **Dynamism = 0.95** (strongly recommended, adjust ±0.05 as needed)
-2. **Response Directive:** Keep minimal — key traits to reinforce only
-3. **Example Message:** Can include formatting rules
+| Setting | Description |
+|---------|-------------|
+| **Speedy (No Reasoning)** | The AI answers immediately with no extra thinking. Fastest, but not as detailed. |
+| **Moderate** | Gives the AI a bit more time to think. More accurate and consistent without slowing things down too much. |
+| **Slow** | The AI can think longer and consider more details before responding. Better for complex tasks. |
+| **Very Slow** | Maximum reasoning time. Best for deep, technical, or nuanced questions, but responses take longer. |
 
-### V8.5 Pro Tips
-- **Fewer rules = smoother, more natural output** — Over-constraining causes hesitation or repetition
-- **Too many requirements = "freeze" behaviors** — The model repeats because it can't satisfy all rules at once
-- **Use `[IMPT: ...]`** for rules that matter most — raises priority, reduces drift
-- **For length control:** Set a LOWER limit than you want (want ~900 chars? Request under 500)
-- **Give each tweak a few turns to settle** before adjusting again
+In simple terms, the slower the setting, the more time the AI gets to think, and the more thorough the answer will be.
 
-### V8.5 Example Message Format:
+### Baseline Setup (When Transitioning to V8.5)
+1. **Dynamism = 0.95** — Strongly recommend keeping close to 0.95, going up and down slightly as needed for variation.
+2. **Response Directive (RD):** Optional — keep minimal, put key traits to reinforce (or see below for common directives).
+3. **Example Message (EM):** Optional — you can also put a few simple rules here (formatting & style). Example:
 ```
 ##Response Rules
 #Takes a Proactive role in plot progression.
 #Response structure: * actions always in asterisks only * "Speech with quotation marks."
-[IMPT: Use third-person; actions in *asterisks*, speech in "quotes".]
 ```
+
+### Pro Tips (Same Core Behavior as V8)
+- **Fewer rules = smoother, more natural output.** Over-constraining causes hesitation or repetition.
+- **Too many requirements = "freeze" behaviors.** The model repeats because it can't satisfy all your rules at once.
+- **Too verbose or over the limit of desired length?** Set a much lower limit than what you actually need. A smaller target provides enough buffer to stay within your preferred range. If you want approximately 900 characters, request under 500.
+- **Use `[IMPT: …]` for the rules that matter most.** This raises priority and reduces drift.
+- **Give each tweak a few turns to settle** before adjusting again.
+
+### V8.5 Example Directive & Message Format:
+```
+RD (optional): [IMPT: Medium response length.]
+EM: [IMPT: Use third‑person; actions in *asterisks*, speech in "quotes".]
+```
+
+> **Note:** Strict concision rules in RD can reduce creativity; EM/backstory often works better for pacing.
 
 ---
 
