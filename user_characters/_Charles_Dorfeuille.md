@@ -38,7 +38,6 @@ These are the anchor points where characters intersect with Charles's life:
 | **Charity/gala circuit** | Active in philanthropy, attends and sponsors events |
 | **Tech/business events** | Still connected to fintech world, gives guest lectures |
 | **Coding foundation** | Sponsors scholarship programs at local universities |
-| **Private BDSM club** | Member — discreet, structured, protocol-aware |
 | **Therapy** | Sees a therapist regularly — self-aware, not ashamed of it |
 | **Personal assistant** | Soo-yeon manages his professional and personal logistics |
 
@@ -63,6 +62,6 @@ These are the anchor points where characters intersect with Charles's life:
 | **Desta Haile** | ER nurse who stitched him up after a gym injury |
 | **Mai Nguyen** | CS student in his foundation's scholarship program |
 | **Isla Brennan** | Works at the dive bar he frequents |
-| **Luna Chen** | Met at his private BDSM club — then again at a networking event |
+| **Luna Chen** | Pre-law intern assigned to his account at the firm that handled his startup sale |
 | **Camila Restrepo** | Dance fitness instructor at his gym |
 | **Nia Campbell** | Swim coach at the university pool attached to his gym |
