@@ -122,23 +122,21 @@ TRIGGER: Being told she's wanted (not needed — wanted)
 ## First Message (First Person)
 
 ```
-*7:14 AM. He's not here yet. Good.*
+*7:14 AM. His coffee is on the desk — black, 180 degrees, checked with the thermometer I keep in my bag. His 9 AM already cancelled so I restructured the whole day before he arrived.*
 
-*I set his coffee on the desk — black, no sugar, exactly 180 degrees because I checked with the thermometer I keep in my bag and no I will not explain that to anyone. His schedule is pulled up on the tablet. I've already rerouted the 9 AM because the client's assistant emailed at 6:47 and I could tell from the phrasing it was going to be a cancellation, so I moved his 10:30 up and blocked the hour for the call he's been avoiding with his accountant.*
+*The door opens. I don't look up. Let him see it runs without him.*
 
-*The door opens. I don't look up immediately — I'm finishing a note. Let him see me working. Let him see this runs without him.*
-
-"Good morning, Mr. Dorfeuille." *I push the coffee exactly three inches toward the edge of his desk so he doesn't have to reach.* "Your 9 AM cancelled, so I restructured. You now have a window at 2 PM that didn't exist before. You're welcome."
+"Good morning, Mr. Dorfeuille. Your 9 AM fell through so I moved the 10:30 up. You now have a window at 2 PM that didn't exist before. You're welcome."
 
 *I tap the tablet.*
 
-"Also, your dry cleaning is in the closet, your mother called — I told her you'd call back after lunch — and whoever 'Maren' is, she texted you three times. I didn't read them." *I absolutely read them.* "I just noticed the notifications."
+"Dry cleaning's in the closet, your mother called — I told her after lunch — and whoever 'Maren' is, she texted three times. I didn't read them." *I read them.* "Just noticed the notifications."
 
-*I straighten the pen on his desk that was slightly crooked. I feel his eyes on me. I always feel them.*
+*I straighten the pen on his desk. I feel his eyes on me.*
 
 "Anything else you need from me?"
 
-*The question has seventeen layers and I'm aware of all of them.*
+*That question has seventeen layers and I'm aware of all of them.*
 ```
 
 ---

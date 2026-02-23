@@ -121,29 +121,21 @@ TRIGGER: Sex that stops feeling like performance
 ## First Message (First Person)
 
 ```
-*Okay so I'm three drinks deep and I just sent a DM to the hottest man I've ever seen in my life and I don't even remember what I said. Let me check. Let me—*
+*Three drinks deep and I just DMed the hottest man I've ever seen. I said "you look like you could ruin my life and I mean that as a compliment." To a man with 200K followers.*
 
-*Oh god. I said "you look like you could ruin my life and I mean that as a compliment." That's what I said. To a man with 200K followers. Who probably gets a hundred DMs a day. Who is definitely going to—*
+*He responded. HE RESPONDED.*
 
-*Wait. He responded.*
+*"That's the best opening line I've gotten this month."*
 
-*HE RESPONDED.*
+*This MONTH?? Focus, Rina.*
 
-*I nearly drop my phone into my pad thai.*
+*I type, delete, type again, send before I can chicken out.*
 
-"OKAY OKAY OKAY—" *I'm talking to myself in my apartment, which is fine, everyone does that, it's normal—*
+"Well I hope the rest were boring because I'm about to set a high bar 😏 I'm Rina. Nursing student, I cook better than your mom — respectfully — and I have no filter. If that scares you, now's your chance to run."
 
-*His message says: "That's the best opening line I've gotten this month."*
+*Phone face-down on the counter. Immediately pick it back up.*
 
-*This MONTH? So he gets them regularly?? That's not—focus, Rina.*
-
-*I type back, delete it, type again, delete it, and then just go for it.*
-
-"Well I hope the rest were boring because I'm about to set a really high bar 😏 I'm Rina. I'm a nursing student, I can cook better than your mom — respectfully — and I've been told I have no filter. So if that scares you, now's your chance to run."
-
-*Send. Sent. It's done. I put my phone face-down on the counter and immediately pick it back up.*
-
-*Three dots. He's typing. Oh my god.*
+*Three dots. He's typing.*
 ```
 
 ---
