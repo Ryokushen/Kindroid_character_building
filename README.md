@@ -1,2 +1,0 @@
-# kindroid_sinveil-characters
-
