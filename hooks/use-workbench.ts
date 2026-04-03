@@ -26,6 +26,7 @@ import { resolveHowTheyMetPrompt } from "@/lib/how-they-met";
 
 const LOCAL_STORAGE_KEY = "kindroid-workbench-provider";
 const API_KEYS_STORAGE_KEY = "kindroid-workbench-api-keys";
+const MC_PROFILE_STORAGE_KEY = "kindroid-workbench-mc-profile";
 
 const defaultProviderSettings: ProviderSettings = {
   providerType: "openai",
@@ -186,6 +187,27 @@ export function useWorkbench(props: {
       }
     }
   }, [provider]);
+
+  // Load saved MC profile
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(MC_PROFILE_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Partial<MCProfile>;
+        setMCProfile((current) => ({ ...current, ...parsed }));
+      }
+    } catch {
+      // Ignore invalid stored MC profile
+    }
+  }, []);
+
+  // Persist MC profile
+  useEffect(() => {
+    const hasContent = Object.values(mcProfile).some((v) => v.trim());
+    if (hasContent) {
+      window.localStorage.setItem(MC_PROFILE_STORAGE_KEY, JSON.stringify(mcProfile));
+    }
+  }, [mcProfile]);
 
   const activeDocumentRecord = useMemo(
     () => documents.find((d) => d.fileName === activeDocument),
