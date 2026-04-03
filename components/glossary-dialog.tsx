@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { CHARACTER_TEMPLATES } from "@/lib/templates"
 import { BACKSTORY_ARCHITECTURES } from "@/lib/backstory-architectures"
@@ -163,7 +162,7 @@ export function GlossaryDialog() {
         <DialogHeader>
           <DialogTitle>Character Building Glossary</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="flex-1 mt-4 -mr-2 pr-2 max-h-[calc(85vh-5rem)]">
+        <div className="flex-1 mt-4 overflow-y-auto -mr-2 pr-2" style={{ maxHeight: "calc(85vh - 5rem)" }}>
           <div className="space-y-8 pb-4">
             {/* Body Types */}
             <section>
@@ -354,7 +353,7 @@ export function GlossaryDialog() {
               </div>
             </section>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   )
