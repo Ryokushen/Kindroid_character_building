@@ -5,7 +5,8 @@
       "Bash(git push)",
       "Bash(ls:*)",
       "Bash(python:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
