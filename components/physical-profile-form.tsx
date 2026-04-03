@@ -44,13 +44,16 @@ function PillGroup<T extends string>({
   );
 }
 
-export function PhysicalProfileForm({
-  physicalProfile,
-  setPhysicalProfile,
-}: {
+type PhysicalProfileProps = {
   physicalProfile: PhysicalProfile;
   setPhysicalProfile: Dispatch<SetStateAction<PhysicalProfile>>;
-}) {
+};
+
+/**
+ * Physical appearance fields: body type, height, age range, ethnicity.
+ * Rendered on the Concept tab.
+ */
+export function PhysicalAppearanceForm({ physicalProfile, setPhysicalProfile }: PhysicalProfileProps) {
   const [open, setOpen] = useState(false);
 
   function update<K extends keyof PhysicalProfile>(field: K, value: PhysicalProfile[K]) {
@@ -61,9 +64,7 @@ export function PhysicalProfileForm({
     physicalProfile.bodyType ||
     physicalProfile.height ||
     physicalProfile.ageRange ||
-    physicalProfile.ethnicity ||
-    physicalProfile.flirtationStyle ||
-    physicalProfile.availabilityStatus
+    physicalProfile.ethnicity
   );
 
   const activeCount = [
@@ -71,15 +72,13 @@ export function PhysicalProfileForm({
     physicalProfile.height,
     physicalProfile.ageRange,
     physicalProfile.ethnicity,
-    physicalProfile.flirtationStyle,
-    physicalProfile.availabilityStatus,
   ].filter(Boolean).length;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border border-border bg-secondary/50 px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
         <div className="flex items-center gap-2">
-          <span>Physical Profile & Demographics</span>
+          <span>Physical Appearance</span>
           {hasContent && (
             <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-pink-500/10 text-pink-400">
               {activeCount} set
@@ -97,7 +96,7 @@ export function PhysicalProfileForm({
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-3 space-y-3">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Shape her physical appearance, age, background, and how she shows interest. These feed directly into the Selfie Description, Overview, and behavioral writing.
+          Shape her physical appearance. Feeds directly into the Selfie Description, Avatar Prompt, and Overview.
         </p>
 
         <PillGroup
@@ -155,34 +154,58 @@ export function PhysicalProfileForm({
             Shapes appearance, family dynamics, cultural habits, and food references in journals.
           </p>
         </div>
-
-        <PillGroup
-          label="Flirtation style"
-          options={[
-            { value: "bold-direct" as const, label: "Bold & direct" },
-            { value: "subtle-deniability" as const, label: "Subtle / plausible deniability" },
-            { value: "physical-touchy" as const, label: "Physical / touchy" },
-            { value: "teasing-push-pull" as const, label: "Teasing / push-pull" },
-            { value: "acts-of-service" as const, label: "Acts of service" },
-            { value: "shy-stolen-glances" as const, label: "Shy / stolen glances" },
-          ]}
-          value={physicalProfile.flirtationStyle}
-          onChange={(v) => update("flirtationStyle", v)}
-        />
-
-        <PillGroup
-          label="Availability status"
-          options={[
-            { value: "single" as const, label: "Single" },
-            { value: "divorced" as const, label: "Divorced" },
-            { value: "its-complicated" as const, label: "It's complicated" },
-            { value: "taken" as const, label: "Taken" },
-            { value: "married-forbidden" as const, label: "Married (forbidden)" },
-          ]}
-          value={physicalProfile.availabilityStatus}
-          onChange={(v) => update("availabilityStatus", v)}
-        />
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+/**
+ * Flirtation style selector — rendered on the Personality tab.
+ */
+export function FlirtationStylePills({ physicalProfile, setPhysicalProfile }: PhysicalProfileProps) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/50 px-4 py-3 space-y-1.5">
+      <PillGroup
+        label="Flirtation style"
+        options={[
+          { value: "bold-direct" as const, label: "Bold & direct" },
+          { value: "subtle-deniability" as const, label: "Subtle / plausible deniability" },
+          { value: "physical-touchy" as const, label: "Physical / touchy" },
+          { value: "teasing-push-pull" as const, label: "Teasing / push-pull" },
+          { value: "acts-of-service" as const, label: "Acts of service" },
+          { value: "shy-stolen-glances" as const, label: "Shy / stolen glances" },
+        ]}
+        value={physicalProfile.flirtationStyle}
+        onChange={(v) => setPhysicalProfile((c) => ({ ...c, flirtationStyle: v }))}
+      />
+      <p className="text-[10px] text-muted-foreground">
+        How she shows interest — shapes the backstory, greetings, and Example Message.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Availability status selector — rendered on the Concept tab.
+ */
+export function AvailabilityStatusPills({ physicalProfile, setPhysicalProfile }: PhysicalProfileProps) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/50 px-4 py-3 space-y-1.5">
+      <PillGroup
+        label="Availability status"
+        options={[
+          { value: "single" as const, label: "Single" },
+          { value: "divorced" as const, label: "Divorced" },
+          { value: "its-complicated" as const, label: "It's complicated" },
+          { value: "taken" as const, label: "Taken" },
+          { value: "married-forbidden" as const, label: "Married (forbidden)" },
+        ]}
+        value={physicalProfile.availabilityStatus}
+        onChange={(v) => setPhysicalProfile((c) => ({ ...c, availabilityStatus: v }))}
+      />
+      <p className="text-[10px] text-muted-foreground">
+        Influences backstory tension, guilt dynamics, and relationship stakes.
+      </p>
+    </div>
   );
 }

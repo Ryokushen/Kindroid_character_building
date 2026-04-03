@@ -49,11 +49,13 @@ export function DraftBuilderPanel({
           selectedTemplates: resolveTemplatePrompts(state.selectedTemplates),
           selectedBackstories: state.selectedBackstories,
           selectedScenarios: state.selectedScenarios,
+          physicalProfile: state.physicalProfile,
           emotionalLogic: state.emotionalLogic,
           relationshipDynamic: state.relationshipDynamic,
           voiceProfile: state.voiceProfile,
           contrastNotes: state.contrastNotes,
           journalCategories: state.journalCategories,
+          mcProfile: state.mcProfile,
           provider: state.provider,
         }),
       });
