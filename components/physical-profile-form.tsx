@@ -109,7 +109,6 @@ export function PhysicalAppearanceForm({ physicalProfile, setPhysicalProfile }: 
             { value: "thick" as const, label: "Thick" },
             { value: "voluptuous" as const, label: "Voluptuous" },
             { value: "extreme-voluptuous" as const, label: "Extreme Voluptuous" },
-            { value: "bbw" as const, label: "BBW" },
           ]}
           value={physicalProfile.bodyType}
           onChange={(v) => update("bodyType", v)}

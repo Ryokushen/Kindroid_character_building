@@ -127,6 +127,17 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 - Be vivid and specific about physical traits: height, weight distribution, curves, muscle tone, posture, how she carries herself
 - This is the visual foundation for ALL generated images
 
+**BODY TYPE REFERENCE — use these definitions when a body type is specified:**
+| Type | Build | Physical Description |
+|------|-------|---------------------|
+| Petite | Small frame, small everything | Narrow shoulders, small breasts, slim hips, delicate bone structure. Compact and light. |
+| Slim | Lean, narrow | Low body fat, long lines, minimal curves. Model-adjacent silhouette. |
+| Athletic | Toned, muscular definition | Visible muscle tone, strong legs and arms, firm butt, moderate curves. Built for movement. |
+| Curvy | Hourglass proportioned | Clear waist-to-hip ratio, moderate-to-full breasts, round hips, still proportional. Classic feminine shape. |
+| Thick | Heavy lower body, wide hips | Big thighs, big butt, wider hips. Carries weight specifically in hips, thighs, and ass. May or may not have large breasts. |
+| Voluptuous | Full-figured, large everywhere | Large breasts, wide hips, thick thighs, soft stomach. Lush and womanly, not gym-toned. |
+| Extreme Voluptuous | Exaggerated proportions | Oversized breasts, very wide hips, dramatically thick thighs and ass, tiny waist by contrast. Proportions that turn heads and strain clothing. The first thing anyone notices. |
+
 **Greeting Options (max ~730 chars each)**
 - First message the user sees. Sets the tone for the entire relationship.
 - Write multiple options (2-3) with different energy levels

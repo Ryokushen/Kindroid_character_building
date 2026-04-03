@@ -33,7 +33,7 @@ export type ProviderSettings = {
 // --- Guided character builder types ---
 
 export type PhysicalProfile = {
-  bodyType: "petite" | "slim" | "athletic" | "curvy" | "thick" | "voluptuous" | "extreme-voluptuous" | "bbw" | "";
+  bodyType: "petite" | "slim" | "athletic" | "curvy" | "thick" | "voluptuous" | "extreme-voluptuous" | "";
   height: "very-short" | "short" | "average" | "tall" | "very-tall" | "";
   ageRange: "18-22" | "23-27" | "28-33" | "34-40" | "41-50" | "50+" | "";
   ethnicity: string;
