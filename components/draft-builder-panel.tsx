@@ -47,6 +47,13 @@ export function DraftBuilderPanel({
           selectedDocuments: state.selectedDocuments,
           selectedCharacters: state.selectedCharacters,
           selectedTemplates: resolveTemplatePrompts(state.selectedTemplates),
+          selectedBackstories: state.selectedBackstories,
+          selectedScenarios: state.selectedScenarios,
+          emotionalLogic: state.emotionalLogic,
+          relationshipDynamic: state.relationshipDynamic,
+          voiceProfile: state.voiceProfile,
+          contrastNotes: state.contrastNotes,
+          journalCategories: state.journalCategories,
           provider: state.provider,
         }),
       });
@@ -83,19 +90,7 @@ export function DraftBuilderPanel({
 
         <Separator className="bg-border/60" />
 
-        <BriefForm
-          brief={state.brief}
-          notes={state.notes}
-          sexualProfile={state.sexualProfile}
-          characters={state.characters}
-          selectedCharacters={state.selectedCharacters}
-          selectedTemplates={state.selectedTemplates}
-          setBrief={actions.setBrief}
-          setNotes={actions.setNotes}
-          setSexualProfile={actions.setSexualProfile}
-          setSelectedTemplates={actions.setSelectedTemplates}
-          onToggleCharacter={actions.toggleCharacterSelection}
-        />
+        <BriefForm state={state} actions={actions} />
 
         {/* Generation mode toggle */}
         <div className="space-y-2">

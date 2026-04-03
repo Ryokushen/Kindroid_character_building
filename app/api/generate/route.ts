@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { generateCharacterDraft } from "@/lib/generation";
 import type { GenerationPayload } from "@/lib/types";
+import { DEFAULT_EMOTIONAL_LOGIC, DEFAULT_JOURNAL_CATEGORIES, DEFAULT_RELATIONSHIP_DYNAMIC, DEFAULT_VOICE_PROFILE } from "@/lib/types";
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,13 @@ export async function POST(request: Request) {
       selectedDocuments: body.selectedDocuments ?? [],
       selectedCharacters: body.selectedCharacters ?? [],
       selectedTemplates: body.selectedTemplates ?? [],
+      selectedBackstories: body.selectedBackstories ?? [],
+      selectedScenarios: body.selectedScenarios ?? [],
+      emotionalLogic: body.emotionalLogic ?? DEFAULT_EMOTIONAL_LOGIC,
+      relationshipDynamic: body.relationshipDynamic ?? DEFAULT_RELATIONSHIP_DYNAMIC,
+      voiceProfile: body.voiceProfile ?? DEFAULT_VOICE_PROFILE,
+      contrastNotes: body.contrastNotes ?? "",
+      journalCategories: body.journalCategories ?? DEFAULT_JOURNAL_CATEGORIES,
       provider: {
         providerType: body.provider.providerType ?? "openai",
         providerLabel: body.provider.providerLabel ?? "Custom",

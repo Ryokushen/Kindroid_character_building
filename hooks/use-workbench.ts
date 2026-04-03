@@ -2,7 +2,21 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { CharacterSummary, LibraryDocument, ProviderSettings } from "@/lib/types";
+import type {
+  CharacterSummary,
+  EmotionalLogic,
+  JournalCategories,
+  LibraryDocument,
+  ProviderSettings,
+  RelationshipDynamic,
+  VoiceProfile,
+} from "@/lib/types";
+import {
+  DEFAULT_EMOTIONAL_LOGIC,
+  DEFAULT_JOURNAL_CATEGORIES,
+  DEFAULT_RELATIONSHIP_DYNAMIC,
+  DEFAULT_VOICE_PROFILE,
+} from "@/lib/types";
 import { resolveTemplatePrompts } from "@/components/template-selector";
 
 const LOCAL_STORAGE_KEY = "kindroid-workbench-provider";
@@ -40,6 +54,14 @@ export type WorkbenchState = {
   selectedTemplates: string[];
   // Sexual profile
   sexualProfile: string;
+  // Guided builder
+  selectedBackstories: string[];
+  selectedScenarios: string[];
+  emotionalLogic: EmotionalLogic;
+  relationshipDynamic: RelationshipDynamic;
+  voiceProfile: VoiceProfile;
+  contrastNotes: string;
+  journalCategories: JournalCategories;
 };
 
 export type WorkbenchActions = {
@@ -55,6 +77,13 @@ export type WorkbenchActions = {
   setBatchTemperatures: Dispatch<SetStateAction<number[]>>;
   setSelectedTemplates: Dispatch<SetStateAction<string[]>>;
   setSexualProfile: Dispatch<SetStateAction<string>>;
+  setSelectedBackstories: Dispatch<SetStateAction<string[]>>;
+  setSelectedScenarios: Dispatch<SetStateAction<string[]>>;
+  setEmotionalLogic: Dispatch<SetStateAction<EmotionalLogic>>;
+  setRelationshipDynamic: Dispatch<SetStateAction<RelationshipDynamic>>;
+  setVoiceProfile: Dispatch<SetStateAction<VoiceProfile>>;
+  setContrastNotes: Dispatch<SetStateAction<string>>;
+  setJournalCategories: Dispatch<SetStateAction<JournalCategories>>;
   toggleDocumentSelection: (fileName: string) => void;
   toggleCharacterSelection: (fileName: string) => void;
   handleAddDocument: (formData: FormData) => void;
@@ -100,6 +129,13 @@ export function useWorkbench(props: {
   const [batchResults, setBatchResults] = useState<Array<{ temperature: number; markdown: string }>>([]);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [sexualProfile, setSexualProfile] = useState("");
+  const [selectedBackstories, setSelectedBackstories] = useState<string[]>([]);
+  const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
+  const [emotionalLogic, setEmotionalLogic] = useState<EmotionalLogic>(DEFAULT_EMOTIONAL_LOGIC);
+  const [relationshipDynamic, setRelationshipDynamic] = useState<RelationshipDynamic>(DEFAULT_RELATIONSHIP_DYNAMIC);
+  const [voiceProfile, setVoiceProfile] = useState<VoiceProfile>(DEFAULT_VOICE_PROFILE);
+  const [contrastNotes, setContrastNotes] = useState("");
+  const [journalCategories, setJournalCategories] = useState<JournalCategories>(DEFAULT_JOURNAL_CATEGORIES);
 
   // Load saved provider settings + per-provider API keys
   useEffect(() => {
@@ -236,6 +272,13 @@ export function useWorkbench(props: {
             selectedDocuments,
             selectedCharacters,
             selectedTemplates: resolveTemplatePrompts(selectedTemplates),
+            selectedBackstories,
+            selectedScenarios,
+            emotionalLogic,
+            relationshipDynamic,
+            voiceProfile,
+            contrastNotes,
+            journalCategories,
             provider,
           }),
         });
@@ -268,6 +311,13 @@ export function useWorkbench(props: {
             selectedDocuments,
             selectedCharacters,
             selectedTemplates: resolveTemplatePrompts(selectedTemplates),
+            selectedBackstories,
+            selectedScenarios,
+            emotionalLogic,
+            relationshipDynamic,
+            voiceProfile,
+            contrastNotes,
+            journalCategories,
             provider,
             temperatures: batchTemperatures,
           }),
@@ -365,6 +415,13 @@ export function useWorkbench(props: {
     batchResults,
     selectedTemplates,
     sexualProfile,
+    selectedBackstories,
+    selectedScenarios,
+    emotionalLogic,
+    relationshipDynamic,
+    voiceProfile,
+    contrastNotes,
+    journalCategories,
   };
 
   const actions: WorkbenchActions = {
@@ -380,6 +437,13 @@ export function useWorkbench(props: {
     setBatchTemperatures,
     setSelectedTemplates,
     setSexualProfile,
+    setSelectedBackstories,
+    setSelectedScenarios,
+    setEmotionalLogic,
+    setRelationshipDynamic,
+    setVoiceProfile,
+    setContrastNotes,
+    setJournalCategories,
     toggleDocumentSelection: (fileName) => toggle(fileName, selectedDocuments, setSelectedDocuments),
     toggleCharacterSelection: (fileName) => toggle(fileName, selectedCharacters, setSelectedCharacters),
     handleAddDocument,

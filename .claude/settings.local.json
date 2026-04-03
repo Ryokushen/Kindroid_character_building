@@ -13,7 +13,12 @@
       "Bash(npx next:*)",
       "Bash(wc -c /Users/charlesdorfeuille/Artificial/Kindroid_character_building/PDF-Text/*.txt /Users/charlesdorfeuille/Artificial/Kindroid_character_building/PDF-Text/*.md)",
       "Bash(wc -c /Users/charlesdorfeuille/Artificial/Kindroid_character_building/characters/*.md)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.x.ai)",
+      "Bash(for f:*)",
+      "Bash(do head:*)",
+      "Bash(done)"
     ]
   }
 }

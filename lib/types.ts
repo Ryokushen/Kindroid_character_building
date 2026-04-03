@@ -30,6 +30,40 @@ export type ProviderSettings = {
   temperature: number;
 };
 
+// --- Guided character builder types ---
+
+export type EmotionalLogic = {
+  wound: string;
+  armor: string;
+  crackInArmor: string;
+  contradiction: string;
+};
+
+export type RelationshipDynamic = {
+  powerDynamic: "user-leads" | "character-leads" | "shifts" | "equals" | "";
+  emotionalTemperature: "slow-simmer" | "instant-chemistry" | "antagonistic" | "comfortable-warmth" | "";
+  attachmentStyle: "anxious" | "avoidant" | "secure" | "disorganized" | "";
+  wantFromUser: string;
+  sayTheyWant: string;
+};
+
+export type VoiceProfile = {
+  textingStyle: "full-sentences" | "fragments" | "emoji-heavy" | "voice-note" | "";
+  verbalTics: string;
+  codeSwitching: string;
+  humorStyle: "dry-sarcasm" | "physical-comedy" | "self-deprecating" | "witty-banter" | "dark-humor" | "none" | "";
+};
+
+export type JournalCategories = {
+  dailyLife: boolean;
+  familyBackground: boolean;
+  emotionalTriggers: boolean;
+  relationshipMilestones: boolean;
+  seasonalSituational: boolean;
+};
+
+// --- Generation payload ---
+
 export type GenerationPayload = {
   brief: string;
   notes: string;
@@ -37,8 +71,17 @@ export type GenerationPayload = {
   selectedDocuments: string[];
   selectedCharacters: string[];
   selectedTemplates: string[];
+  selectedBackstories: string[];
+  selectedScenarios: string[];
+  emotionalLogic: EmotionalLogic;
+  relationshipDynamic: RelationshipDynamic;
+  voiceProfile: VoiceProfile;
+  contrastNotes: string;
+  journalCategories: JournalCategories;
   provider: ProviderSettings;
 };
+
+// --- Character section types ---
 
 export type CharacterSectionKey =
   | "name"
@@ -53,19 +96,16 @@ export type CharacterSectionKey =
   | "greeting_options"
   | "selfie_prompts";
 
-/** A single journal entry parsed from the Journal Entries section. */
 export type JournalEntry = {
   title: string;
   content: string;
 };
 
-/** A single greeting parsed from the Greeting Options section. */
 export type GreetingEntry = {
   title: string;
   content: string;
 };
 
-/** Kindroid field limits (characters). */
 export const KINDROID_LIMITS: Partial<Record<CharacterSectionKey | string, number>> = {
   backstory: 2500,
   response_directive: 250,
@@ -89,4 +129,36 @@ export type SectionRegenerationPayload = {
   fullCharacterContext: string;
   selectedDocuments: string[];
   provider: ProviderSettings;
+};
+
+// --- Default values ---
+
+export const DEFAULT_EMOTIONAL_LOGIC: EmotionalLogic = {
+  wound: "",
+  armor: "",
+  crackInArmor: "",
+  contradiction: "",
+};
+
+export const DEFAULT_RELATIONSHIP_DYNAMIC: RelationshipDynamic = {
+  powerDynamic: "",
+  emotionalTemperature: "",
+  attachmentStyle: "",
+  wantFromUser: "",
+  sayTheyWant: "",
+};
+
+export const DEFAULT_VOICE_PROFILE: VoiceProfile = {
+  textingStyle: "",
+  verbalTics: "",
+  codeSwitching: "",
+  humorStyle: "",
+};
+
+export const DEFAULT_JOURNAL_CATEGORIES: JournalCategories = {
+  dailyLife: true,
+  familyBackground: true,
+  emotionalTriggers: false,
+  relationshipMilestones: false,
+  seasonalSituational: false,
 };

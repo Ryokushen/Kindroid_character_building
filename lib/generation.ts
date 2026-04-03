@@ -254,6 +254,13 @@ export function buildUserPrompt(input: {
   documentContext: string;
   characterContext: string;
   templateAdditions?: string[];
+  backstoryAdditions?: string[];
+  scenarioAdditions?: string[];
+  emotionalLogic?: import("@/lib/types").EmotionalLogic;
+  relationshipDynamic?: import("@/lib/types").RelationshipDynamic;
+  voiceProfile?: import("@/lib/types").VoiceProfile;
+  contrastNotes?: string;
+  journalCategories?: import("@/lib/types").JournalCategories;
 }) {
   const parts = [
     "Character brief:",
@@ -263,6 +270,35 @@ export function buildUserPrompt(input: {
     input.notes.trim() || "None provided.",
   ];
 
+  // Backstory architecture
+  if (input.backstoryAdditions && input.backstoryAdditions.length > 0) {
+    parts.push("", "Backstory/scenario pattern:", input.backstoryAdditions.join("\n"));
+  }
+
+  // Emotional logic framework
+  const el = input.emotionalLogic;
+  if (el && (el.wound || el.armor || el.crackInArmor || el.contradiction)) {
+    const bullets: string[] = [];
+    if (el.wound) bullets.push(`- Their wound (what shaped them): ${el.wound}`);
+    if (el.armor) bullets.push(`- Their armor (how they protect themselves): ${el.armor}`);
+    if (el.crackInArmor) bullets.push(`- What cracks the armor (earns vulnerability): ${el.crackInArmor}`);
+    if (el.contradiction) bullets.push(`- Their contradiction (inner tension): ${el.contradiction}`);
+    parts.push("", "Emotional core — build the backstory and personality around these dynamics:", bullets.join("\n"));
+  }
+
+  // Relationship dynamic
+  const rd = input.relationshipDynamic;
+  if (rd && (rd.powerDynamic || rd.emotionalTemperature || rd.attachmentStyle || rd.wantFromUser || rd.sayTheyWant)) {
+    const bullets: string[] = [];
+    if (rd.powerDynamic) bullets.push(`- Power dynamic: ${rd.powerDynamic.replace(/-/g, " ")}`);
+    if (rd.emotionalTemperature) bullets.push(`- Emotional temperature: ${rd.emotionalTemperature.replace(/-/g, " ")}`);
+    if (rd.attachmentStyle) bullets.push(`- Attachment style: ${rd.attachmentStyle}`);
+    if (rd.wantFromUser) bullets.push(`- What they actually want from the user: ${rd.wantFromUser}`);
+    if (rd.sayTheyWant) bullets.push(`- What they SAY they want (may differ): ${rd.sayTheyWant}`);
+    parts.push("", "Relationship dynamic with the user:", bullets.join("\n"));
+  }
+
+  // Sexual profile
   if (input.sexualProfile?.trim()) {
     parts.push(
       "",
@@ -271,10 +307,55 @@ export function buildUserPrompt(input: {
     );
   }
 
+  // Voice and speech patterns
+  const vp = input.voiceProfile;
+  if (vp && (vp.textingStyle || vp.verbalTics || vp.codeSwitching || vp.humorStyle)) {
+    const bullets: string[] = [];
+    if (vp.textingStyle) bullets.push(`- Texting style: ${vp.textingStyle.replace(/-/g, " ")}`);
+    if (vp.verbalTics) bullets.push(`- Verbal tics / catchphrases: ${vp.verbalTics}`);
+    if (vp.codeSwitching) bullets.push(`- Code-switching (voice changes by context): ${vp.codeSwitching}`);
+    if (vp.humorStyle) bullets.push(`- Humor style: ${vp.humorStyle.replace(/-/g, " ")}`);
+    parts.push("", "Voice and speech patterns — reflect these in the Example Message and dialogue:", bullets.join("\n"));
+  }
+
+  // Personality templates
   if (input.templateAdditions && input.templateAdditions.length > 0) {
     parts.push("", "Style/personality modifiers:", input.templateAdditions.join("\n"));
   }
 
+  // Scenario templates
+  if (input.scenarioAdditions && input.scenarioAdditions.length > 0) {
+    parts.push("", "Scenario modifiers:", input.scenarioAdditions.join("\n"));
+  }
+
+  // Character contrast notes
+  if (input.contrastNotes?.trim()) {
+    parts.push(
+      "",
+      "Character differentiation notes (make this character distinct from reference characters):",
+      input.contrastNotes.trim(),
+    );
+  }
+
+  // Journal categories
+  const jc = input.journalCategories;
+  if (jc) {
+    const categories: string[] = [];
+    if (jc.dailyLife) categories.push("Daily life (apartment, routines, food, hobbies)");
+    if (jc.familyBackground) categories.push("Family and background");
+    if (jc.emotionalTriggers) categories.push("Emotional triggers (what sets them off, what calms them)");
+    if (jc.relationshipMilestones) categories.push("Relationship milestones (first kiss, first fight, inside jokes)");
+    if (jc.seasonalSituational) categories.push("Seasonal and situational (holidays, birthdays, weather reactions)");
+    if (categories.length > 0) {
+      parts.push(
+        "",
+        "Journal entry categories to generate (create at least one journal entry per category):",
+        categories.map((c) => `- ${c}`).join("\n"),
+      );
+    }
+  }
+
+  // Repository and reference context
   parts.push(
     "",
     "Repository context (best-practice guidance from Kindroid community):",
@@ -410,6 +491,13 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
       documentContext,
       characterContext,
       templateAdditions: payload.selectedTemplates,
+      backstoryAdditions: payload.selectedBackstories,
+      scenarioAdditions: payload.selectedScenarios,
+      emotionalLogic: payload.emotionalLogic,
+      relationshipDynamic: payload.relationshipDynamic,
+      voiceProfile: payload.voiceProfile,
+      contrastNotes: payload.contrastNotes,
+      journalCategories: payload.journalCategories,
     }),
   );
 }
@@ -472,6 +560,13 @@ export async function buildPromptPreview(payload: GenerationPayload) {
     documentContext,
     characterContext,
     templateAdditions: payload.selectedTemplates,
+    backstoryAdditions: payload.selectedBackstories,
+    scenarioAdditions: payload.selectedScenarios,
+    emotionalLogic: payload.emotionalLogic,
+    relationshipDynamic: payload.relationshipDynamic,
+    voiceProfile: payload.voiceProfile,
+    contrastNotes: payload.contrastNotes,
+    journalCategories: payload.journalCategories,
   });
 
   return {
