@@ -32,12 +32,31 @@ export type ProviderSettings = {
 
 // --- Guided character builder types ---
 
+export type EyeColor =
+  | "brown" | "dark-brown" | "light-brown"
+  | "blue" | "ice-blue" | "blue-green"
+  | "green" | "emerald-green" | "gray-green"
+  | "hazel" | "gray" | "steel-gray"
+  | "honey-amber" | "golden-brown"
+  | "violet" | "nearly-black" | "heterochromia"
+  | "";
+
+export type DistinguishingFeature =
+  | "freckles" | "beauty-mark" | "dimples" | "gap-teeth"
+  | "tattoos-subtle" | "tattoos-heavy" | "piercings-minimal" | "piercings-multiple"
+  | "glasses" | "scar-facial" | "scar-body" | "birthmark"
+  | "stretch-marks" | "thick-eyebrows" | "long-lashes" | "full-lips"
+  | "button-nose" | "strong-jawline" | "high-cheekbones" | "cleft-chin"
+  | "curly-textured-hair" | "silver-gray-streak" | "braces" | "vitiligo";
+
 export type PhysicalProfile = {
   bodyType: "petite" | "slim" | "athletic" | "curvy" | "thick" | "voluptuous" | "extreme-voluptuous" | "";
   height: "very-short" | "short" | "average" | "tall" | "very-tall" | "";
   ageRange: "18-22" | "23-27" | "28-33" | "34-40" | "41-50" | "50+" | "";
   ethnicity: string;
-  flirtationStyle: "bold-direct" | "subtle-deniability" | "physical-touchy" | "teasing-push-pull" | "acts-of-service" | "shy-stolen-glances" | "";
+  eyeColor: EyeColor;
+  distinguishingFeatures: DistinguishingFeature[];
+  flirtationStyle: string;
   availabilityStatus: "single" | "divorced" | "its-complicated" | "taken" | "married-forbidden" | "";
 };
 
@@ -46,6 +65,8 @@ export const DEFAULT_PHYSICAL_PROFILE: PhysicalProfile = {
   height: "",
   ageRange: "",
   ethnicity: "",
+  eyeColor: "",
+  distinguishingFeatures: [],
   flirtationStyle: "",
   availabilityStatus: "",
 };
@@ -57,10 +78,16 @@ export type EmotionalLogic = {
   contradiction: string;
 };
 
+export type AttachmentStyle =
+  | "anxious" | "avoidant" | "secure" | "disorganized"
+  | "earned-secure" | "anxious-preoccupied" | "dismissive-avoidant"
+  | "fearful-avoidant" | "love-bomber" | "protest-behavior"
+  | "";
+
 export type RelationshipDynamic = {
   powerDynamic: "user-leads" | "character-leads" | "shifts" | "equals" | "";
   emotionalTemperature: "slow-simmer" | "instant-chemistry" | "antagonistic" | "comfortable-warmth" | "";
-  attachmentStyle: "anxious" | "avoidant" | "secure" | "disorganized" | "";
+  attachmentStyle: AttachmentStyle;
   wantFromUser: string;
   sayTheyWant: string;
 };
@@ -120,6 +147,7 @@ export type GenerationPayload = {
   selectedTemplates: string[];
   selectedBackstories: string[];
   selectedScenarios: string[];
+  howTheyMet: string;
   physicalProfile: PhysicalProfile;
   emotionalLogic: EmotionalLogic;
   relationshipDynamic: RelationshipDynamic;

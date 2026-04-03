@@ -34,6 +34,7 @@ export async function POST(request: Request) {
           selectedTemplates: body.selectedTemplates ?? [],
           selectedBackstories: body.selectedBackstories ?? [],
           selectedScenarios: body.selectedScenarios ?? [],
+          howTheyMet: body.howTheyMet ?? "",
           physicalProfile: body.physicalProfile ?? DEFAULT_PHYSICAL_PROFILE,
           emotionalLogic: body.emotionalLogic ?? DEFAULT_EMOTIONAL_LOGIC,
           relationshipDynamic: body.relationshipDynamic ?? DEFAULT_RELATIONSHIP_DYNAMIC,

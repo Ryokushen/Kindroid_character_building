@@ -22,6 +22,7 @@ import {
   DEFAULT_VOICE_PROFILE,
 } from "@/lib/types";
 import { resolveTemplatePrompts } from "@/components/template-selector";
+import { resolveHowTheyMetPrompt } from "@/lib/how-they-met";
 
 const LOCAL_STORAGE_KEY = "kindroid-workbench-provider";
 const API_KEYS_STORAGE_KEY = "kindroid-workbench-api-keys";
@@ -61,6 +62,7 @@ export type WorkbenchState = {
   // Guided builder
   selectedBackstories: string[];
   selectedScenarios: string[];
+  howTheyMet: string;
   physicalProfile: PhysicalProfile;
   emotionalLogic: EmotionalLogic;
   relationshipDynamic: RelationshipDynamic;
@@ -85,6 +87,7 @@ export type WorkbenchActions = {
   setSexualProfile: Dispatch<SetStateAction<string>>;
   setSelectedBackstories: Dispatch<SetStateAction<string[]>>;
   setSelectedScenarios: Dispatch<SetStateAction<string[]>>;
+  setHowTheyMet: Dispatch<SetStateAction<string>>;
   setPhysicalProfile: Dispatch<SetStateAction<PhysicalProfile>>;
   setEmotionalLogic: Dispatch<SetStateAction<EmotionalLogic>>;
   setRelationshipDynamic: Dispatch<SetStateAction<RelationshipDynamic>>;
@@ -139,6 +142,7 @@ export function useWorkbench(props: {
   const [sexualProfile, setSexualProfile] = useState("");
   const [selectedBackstories, setSelectedBackstories] = useState<string[]>([]);
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
+  const [howTheyMet, setHowTheyMet] = useState("");
   const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile>(DEFAULT_PHYSICAL_PROFILE);
   const [emotionalLogic, setEmotionalLogic] = useState<EmotionalLogic>(DEFAULT_EMOTIONAL_LOGIC);
   const [relationshipDynamic, setRelationshipDynamic] = useState<RelationshipDynamic>(DEFAULT_RELATIONSHIP_DYNAMIC);
@@ -284,6 +288,7 @@ export function useWorkbench(props: {
             selectedTemplates: resolveTemplatePrompts(selectedTemplates),
             selectedBackstories,
             selectedScenarios,
+            howTheyMet: resolveHowTheyMetPrompt(howTheyMet),
             physicalProfile,
             emotionalLogic,
             relationshipDynamic,
@@ -325,6 +330,7 @@ export function useWorkbench(props: {
             selectedTemplates: resolveTemplatePrompts(selectedTemplates),
             selectedBackstories,
             selectedScenarios,
+            howTheyMet: resolveHowTheyMetPrompt(howTheyMet),
             physicalProfile,
             emotionalLogic,
             relationshipDynamic,
@@ -431,6 +437,7 @@ export function useWorkbench(props: {
     sexualProfile,
     selectedBackstories,
     selectedScenarios,
+    howTheyMet,
     physicalProfile,
     emotionalLogic,
     relationshipDynamic,
@@ -455,6 +462,7 @@ export function useWorkbench(props: {
     setSexualProfile,
     setSelectedBackstories,
     setSelectedScenarios,
+    setHowTheyMet,
     setPhysicalProfile,
     setEmotionalLogic,
     setRelationshipDynamic,

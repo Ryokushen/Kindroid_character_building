@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { PhysicalProfile } from "@/lib/types";
+import type { PhysicalProfile, EyeColor, DistinguishingFeature } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,13 +44,102 @@ function PillGroup<T extends string>({
   );
 }
 
+function MultiPillGroup<T extends string>({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: Array<{ value: T; label: string }>;
+  selected: T[];
+  onChange: (val: T[]) => void;
+}) {
+  function toggle(val: T) {
+    if (selected.includes(val)) {
+      onChange(selected.filter((s) => s !== val));
+    } else {
+      onChange([...selected, val]);
+    }
+  }
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => toggle(opt.value)}
+            className={cn(
+              "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all",
+              selected.includes(opt.value)
+                ? "border-primary/50 bg-primary/15 text-primary"
+                : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40",
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 type PhysicalProfileProps = {
   physicalProfile: PhysicalProfile;
   setPhysicalProfile: Dispatch<SetStateAction<PhysicalProfile>>;
 };
 
+const EYE_COLOR_OPTIONS: Array<{ value: EyeColor & string; label: string }> = [
+  { value: "brown", label: "Brown" },
+  { value: "dark-brown", label: "Dark Brown" },
+  { value: "light-brown", label: "Light Brown" },
+  { value: "blue", label: "Blue" },
+  { value: "ice-blue", label: "Ice Blue" },
+  { value: "blue-green", label: "Blue-Green" },
+  { value: "green", label: "Green" },
+  { value: "emerald-green", label: "Emerald Green" },
+  { value: "gray-green", label: "Gray-Green" },
+  { value: "hazel", label: "Hazel" },
+  { value: "gray", label: "Gray" },
+  { value: "steel-gray", label: "Steel Gray" },
+  { value: "honey-amber", label: "Honey / Amber" },
+  { value: "golden-brown", label: "Golden Brown" },
+  { value: "violet", label: "Violet" },
+  { value: "nearly-black", label: "Nearly Black" },
+  { value: "heterochromia", label: "Heterochromia" },
+];
+
+const FEATURE_OPTIONS: Array<{ value: DistinguishingFeature; label: string }> = [
+  { value: "freckles", label: "Freckles" },
+  { value: "beauty-mark", label: "Beauty mark" },
+  { value: "dimples", label: "Dimples" },
+  { value: "gap-teeth", label: "Gap teeth" },
+  { value: "tattoos-subtle", label: "Tattoos (subtle)" },
+  { value: "tattoos-heavy", label: "Tattoos (heavy)" },
+  { value: "piercings-minimal", label: "Piercings (minimal)" },
+  { value: "piercings-multiple", label: "Piercings (multiple)" },
+  { value: "glasses", label: "Glasses" },
+  { value: "scar-facial", label: "Scar (facial)" },
+  { value: "scar-body", label: "Scar (body)" },
+  { value: "birthmark", label: "Birthmark" },
+  { value: "stretch-marks", label: "Stretch marks" },
+  { value: "thick-eyebrows", label: "Thick eyebrows" },
+  { value: "long-lashes", label: "Long lashes" },
+  { value: "full-lips", label: "Full lips" },
+  { value: "button-nose", label: "Button nose" },
+  { value: "strong-jawline", label: "Strong jawline" },
+  { value: "high-cheekbones", label: "High cheekbones" },
+  { value: "cleft-chin", label: "Cleft chin" },
+  { value: "curly-textured-hair", label: "Curly/textured hair" },
+  { value: "silver-gray-streak", label: "Silver/gray streak" },
+  { value: "braces", label: "Braces" },
+  { value: "vitiligo", label: "Vitiligo" },
+];
+
 /**
- * Physical appearance fields: body type, height, age range, ethnicity.
+ * Physical appearance fields: body type, height, age range, ethnicity, eye color, features.
  * Rendered on the Concept tab.
  */
 export function PhysicalAppearanceForm({ physicalProfile, setPhysicalProfile }: PhysicalProfileProps) {
@@ -64,7 +153,9 @@ export function PhysicalAppearanceForm({ physicalProfile, setPhysicalProfile }: 
     physicalProfile.bodyType ||
     physicalProfile.height ||
     physicalProfile.ageRange ||
-    physicalProfile.ethnicity
+    physicalProfile.ethnicity ||
+    physicalProfile.eyeColor ||
+    physicalProfile.distinguishingFeatures.length > 0
   );
 
   const activeCount = [
@@ -72,6 +163,8 @@ export function PhysicalAppearanceForm({ physicalProfile, setPhysicalProfile }: 
     physicalProfile.height,
     physicalProfile.ageRange,
     physicalProfile.ethnicity,
+    physicalProfile.eyeColor,
+    physicalProfile.distinguishingFeatures.length > 0 ? "has" : "",
   ].filter(Boolean).length;
 
   return (
@@ -149,10 +242,21 @@ export function PhysicalAppearanceForm({ physicalProfile, setPhysicalProfile }: 
             placeholder="e.g. Latina (Mexican-American), Korean, Black, Italian, mixed..."
             className="bg-muted/50"
           />
-          <p className="text-[10px] text-muted-foreground">
-            Shapes appearance, family dynamics, cultural habits, and food references in journals.
-          </p>
         </div>
+
+        <PillGroup
+          label="Eye color"
+          options={EYE_COLOR_OPTIONS}
+          value={physicalProfile.eyeColor}
+          onChange={(v) => update("eyeColor", v)}
+        />
+
+        <MultiPillGroup
+          label="Distinguishing features (pick multiple)"
+          options={FEATURE_OPTIONS}
+          selected={physicalProfile.distinguishingFeatures}
+          onChange={(v) => update("distinguishingFeatures", v)}
+        />
       </CollapsibleContent>
     </Collapsible>
   );
@@ -160,6 +264,7 @@ export function PhysicalAppearanceForm({ physicalProfile, setPhysicalProfile }: 
 
 /**
  * Flirtation style selector — rendered on the Personality tab.
+ * Now uses string id to support the expanded flirtation-styles.ts data.
  */
 export function FlirtationStylePills({ physicalProfile, setPhysicalProfile }: PhysicalProfileProps) {
   return (
@@ -167,12 +272,24 @@ export function FlirtationStylePills({ physicalProfile, setPhysicalProfile }: Ph
       <PillGroup
         label="Flirtation style"
         options={[
-          { value: "bold-direct" as const, label: "Bold & direct" },
-          { value: "subtle-deniability" as const, label: "Subtle / plausible deniability" },
-          { value: "physical-touchy" as const, label: "Physical / touchy" },
-          { value: "teasing-push-pull" as const, label: "Teasing / push-pull" },
-          { value: "acts-of-service" as const, label: "Acts of service" },
-          { value: "shy-stolen-glances" as const, label: "Shy / stolen glances" },
+          { value: "bold-direct", label: "Bold & direct" },
+          { value: "subtle-deniability", label: "Subtle / deniability" },
+          { value: "physical-touchy", label: "Physical / touchy" },
+          { value: "teasing-push-pull", label: "Teasing / push-pull" },
+          { value: "acts-of-service", label: "Acts of service" },
+          { value: "shy-stolen-glances", label: "Shy / stolen glances" },
+          { value: "intellectual-seduction", label: "Intellectual" },
+          { value: "competitive", label: "Competitive" },
+          { value: "nurturing", label: "Nurturing" },
+          { value: "humor-first", label: "Humor first" },
+          { value: "mysterious-withholding", label: "Mysterious" },
+          { value: "accidental-intimacy", label: "Accidental intimacy" },
+          { value: "dominant-energy", label: "Dominant energy" },
+          { value: "submissive-signals", label: "Submissive signals" },
+          { value: "hot-and-cold", label: "Hot and cold" },
+          { value: "vulnerability-bomb", label: "Vulnerability bomb" },
+          { value: "body-language-only", label: "Body language only" },
+          { value: "drunk-honesty", label: "Drunk honesty" },
         ]}
         value={physicalProfile.flirtationStyle}
         onChange={(v) => setPhysicalProfile((c) => ({ ...c, flirtationStyle: v }))}

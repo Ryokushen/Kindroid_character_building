@@ -107,10 +107,16 @@ export function RelationshipDynamicForm({
         <PillGroup
           label="Attachment style"
           options={[
-            { value: "anxious" as const, label: "Anxious" },
-            { value: "avoidant" as const, label: "Avoidant" },
             { value: "secure" as const, label: "Secure" },
+            { value: "earned-secure" as const, label: "Earned secure" },
+            { value: "anxious" as const, label: "Anxious" },
+            { value: "anxious-preoccupied" as const, label: "Anxious-preoccupied" },
+            { value: "avoidant" as const, label: "Avoidant" },
+            { value: "dismissive-avoidant" as const, label: "Dismissive-avoidant" },
+            { value: "fearful-avoidant" as const, label: "Fearful-avoidant" },
             { value: "disorganized" as const, label: "Disorganized" },
+            { value: "love-bomber" as const, label: "Love bomber" },
+            { value: "protest-behavior" as const, label: "Protest behavior" },
           ]}
           value={rd.attachmentStyle}
           onChange={(v) => update("attachmentStyle", v)}

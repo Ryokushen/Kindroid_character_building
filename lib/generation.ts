@@ -311,6 +311,7 @@ export function buildUserPrompt(input: {
   templateAdditions?: string[];
   backstoryAdditions?: string[];
   scenarioAdditions?: string[];
+  howTheyMet?: string;
   physicalProfile?: import("@/lib/types").PhysicalProfile;
   emotionalLogic?: import("@/lib/types").EmotionalLogic;
   relationshipDynamic?: import("@/lib/types").RelationshipDynamic;
@@ -342,7 +343,7 @@ export function buildUserPrompt(input: {
 
   // Physical profile
   const pp = input.physicalProfile;
-  if (pp && (pp.bodyType || pp.height || pp.ageRange || pp.ethnicity || pp.flirtationStyle || pp.availabilityStatus)) {
+  if (pp && (pp.bodyType || pp.height || pp.ageRange || pp.ethnicity || pp.eyeColor || (pp.distinguishingFeatures && pp.distinguishingFeatures.length > 0) || pp.flirtationStyle || pp.availabilityStatus)) {
     const ppBullets: string[] = [];
     if (pp.bodyType) ppBullets.push(`- Body type: ${pp.bodyType.replace(/-/g, " ")}`);
     if (pp.height) {
@@ -357,16 +358,12 @@ export function buildUserPrompt(input: {
     }
     if (pp.ageRange) ppBullets.push(`- Age range: ${pp.ageRange}`);
     if (pp.ethnicity) ppBullets.push(`- Ethnicity/cultural background: ${pp.ethnicity}`);
+    if (pp.eyeColor) ppBullets.push(`- Eye color: ${pp.eyeColor.replace(/-/g, " ")}`);
+    if (pp.distinguishingFeatures && pp.distinguishingFeatures.length > 0) {
+      ppBullets.push(`- Distinguishing features: ${pp.distinguishingFeatures.map((f) => f.replace(/-/g, " ")).join(", ")}`);
+    }
     if (pp.flirtationStyle) {
-      const flirtMap: Record<string, string> = {
-        "bold-direct": "Bold and direct — she tells you what she wants",
-        "subtle-deniability": "Subtle with plausible deniability — everything could be 'just friendly'",
-        "physical-touchy": "Physical and touchy — she communicates attraction through touch",
-        "teasing-push-pull": "Teasing push-pull — she flirts by challenging and retreating",
-        "acts-of-service": "Acts of service — she shows interest by doing things for you",
-        "shy-stolen-glances": "Shy with stolen glances — attraction is visible but she can't act on it easily",
-      };
-      ppBullets.push(`- Flirtation style: ${flirtMap[pp.flirtationStyle] ?? pp.flirtationStyle}`);
+      ppBullets.push(`- Flirtation style: ${pp.flirtationStyle.replace(/-/g, " ")}`);
     }
     if (pp.availabilityStatus) {
       const statusMap: Record<string, string> = {
@@ -392,6 +389,15 @@ export function buildUserPrompt(input: {
     "Additional notes:",
     input.notes.trim() || "None provided.",
   );
+
+  // How they met
+  if (input.howTheyMet) {
+    parts.push(
+      "",
+      "How they met — use this as the foundation for the backstory, Key Memories, and the greeting:",
+      input.howTheyMet,
+    );
+  }
 
   // Backstory architecture
   if (input.backstoryAdditions && input.backstoryAdditions.length > 0) {
@@ -621,6 +627,7 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
       templateAdditions: payload.selectedTemplates,
       backstoryAdditions: payload.selectedBackstories,
       scenarioAdditions: payload.selectedScenarios,
+      howTheyMet: payload.howTheyMet,
       physicalProfile: payload.physicalProfile,
       emotionalLogic: payload.emotionalLogic,
       relationshipDynamic: payload.relationshipDynamic,

@@ -15,6 +15,7 @@ import { ProviderSettings } from "./provider-settings";
 import { BriefForm } from "./brief-form";
 import { GenerationOutput } from "./generation-output";
 import { BatchGenerationView } from "./batch-generation-view";
+import { GlossaryDialog } from "./glossary-dialog";
 
 export function DraftBuilderPanel({
   state,
@@ -49,6 +50,7 @@ export function DraftBuilderPanel({
           selectedTemplates: resolveTemplatePrompts(state.selectedTemplates),
           selectedBackstories: state.selectedBackstories,
           selectedScenarios: state.selectedScenarios,
+          howTheyMet: state.howTheyMet,
           physicalProfile: state.physicalProfile,
           emotionalLogic: state.emotionalLogic,
           relationshipDynamic: state.relationshipDynamic,
@@ -78,9 +80,12 @@ export function DraftBuilderPanel({
             </p>
             <CardTitle className="font-heading text-lg">Draft Builder</CardTitle>
           </div>
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            {state.selectedDocuments.length} docs in context
-          </Badge>
+          <div className="flex items-center gap-2">
+            <GlossaryDialog />
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              {state.selectedDocuments.length} docs in context
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 

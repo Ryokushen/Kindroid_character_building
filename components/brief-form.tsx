@@ -18,6 +18,7 @@ import { ChemistryTool } from "./chemistry-tool";
 import { JournalCategoriesSelector } from "./journal-categories";
 import { MCProfileForm } from "./mc-profile-form";
 import { PhysicalAppearanceForm, FlirtationStylePills, AvailabilityStatusPills } from "./physical-profile-form";
+import { HowTheyMetSelector } from "./how-they-met-selector";
 
 const TABS = [
   { id: "concept", label: "Concept" },
@@ -54,6 +55,7 @@ function countPersonalityActive(state: WorkbenchState): number {
 
 function countScenarioActive(state: WorkbenchState): number {
   let n = 0;
+  if (state.howTheyMet) n++;
   if (state.selectedBackstories.length > 0) n++;
   if (state.selectedScenarios.length > 0) n++;
   if (state.selectedCharacters.length > 0) n++;
@@ -189,6 +191,11 @@ export function BriefForm({
       {/* ===== SCENARIO TAB ===== */}
       {activeTab === "scenario" && (
         <div className="space-y-3">
+          <HowTheyMetSelector
+            howTheyMet={state.howTheyMet}
+            setHowTheyMet={actions.setHowTheyMet}
+          />
+
           <BackstorySelector
             selected={state.selectedBackstories}
             setSelected={actions.setSelectedBackstories}
