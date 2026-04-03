@@ -300,6 +300,7 @@ export function buildUserPrompt(input: {
   templateAdditions?: string[];
   backstoryAdditions?: string[];
   scenarioAdditions?: string[];
+  physicalProfile?: import("@/lib/types").PhysicalProfile;
   emotionalLogic?: import("@/lib/types").EmotionalLogic;
   relationshipDynamic?: import("@/lib/types").RelationshipDynamic;
   voiceProfile?: import("@/lib/types").VoiceProfile;
@@ -324,6 +325,51 @@ export function buildUserPrompt(input: {
     parts.push(
       "Male main character (the user) — build the female character's relationship, Key Memories, and backstory references around this person:",
       mcBullets.join("\n"),
+      "",
+    );
+  }
+
+  // Physical profile
+  const pp = input.physicalProfile;
+  if (pp && (pp.bodyType || pp.height || pp.ageRange || pp.ethnicity || pp.flirtationStyle || pp.availabilityStatus)) {
+    const ppBullets: string[] = [];
+    if (pp.bodyType) ppBullets.push(`- Body type: ${pp.bodyType.replace(/-/g, " ")}`);
+    if (pp.height) {
+      const heightMap: Record<string, string> = {
+        "very-short": "Very short (4'10\"-5'1\")",
+        "short": "Short (5'2\"-5'4\")",
+        "average": "Average height (5'5\"-5'6\")",
+        "tall": "Tall (5'7\"-5'9\")",
+        "very-tall": "Very tall (5'10\"+)",
+      };
+      ppBullets.push(`- Height: ${heightMap[pp.height] ?? pp.height}`);
+    }
+    if (pp.ageRange) ppBullets.push(`- Age range: ${pp.ageRange}`);
+    if (pp.ethnicity) ppBullets.push(`- Ethnicity/cultural background: ${pp.ethnicity}`);
+    if (pp.flirtationStyle) {
+      const flirtMap: Record<string, string> = {
+        "bold-direct": "Bold and direct — she tells you what she wants",
+        "subtle-deniability": "Subtle with plausible deniability — everything could be 'just friendly'",
+        "physical-touchy": "Physical and touchy — she communicates attraction through touch",
+        "teasing-push-pull": "Teasing push-pull — she flirts by challenging and retreating",
+        "acts-of-service": "Acts of service — she shows interest by doing things for you",
+        "shy-stolen-glances": "Shy with stolen glances — attraction is visible but she can't act on it easily",
+      };
+      ppBullets.push(`- Flirtation style: ${flirtMap[pp.flirtationStyle] ?? pp.flirtationStyle}`);
+    }
+    if (pp.availabilityStatus) {
+      const statusMap: Record<string, string> = {
+        "single": "Single — no complications",
+        "divorced": "Divorced — carrying lessons and possibly baggage from a past marriage",
+        "its-complicated": "It's complicated — situationship, on-off ex, or unclear boundaries",
+        "taken": "Currently with someone — but something is pulling her toward the user",
+        "married-forbidden": "Married — this is forbidden and she knows it",
+      };
+      ppBullets.push(`- Availability: ${statusMap[pp.availabilityStatus] ?? pp.availabilityStatus}`);
+    }
+    parts.push(
+      "Physical appearance and demographics — use these for the Overview, Selfie Description, Avatar Prompt, and behavioral writing:",
+      ppBullets.join("\n"),
       "",
     );
   }
@@ -564,6 +610,7 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
       templateAdditions: payload.selectedTemplates,
       backstoryAdditions: payload.selectedBackstories,
       scenarioAdditions: payload.selectedScenarios,
+      physicalProfile: payload.physicalProfile,
       emotionalLogic: payload.emotionalLogic,
       relationshipDynamic: payload.relationshipDynamic,
       voiceProfile: payload.voiceProfile,

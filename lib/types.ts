@@ -32,6 +32,24 @@ export type ProviderSettings = {
 
 // --- Guided character builder types ---
 
+export type PhysicalProfile = {
+  bodyType: "petite" | "slim" | "athletic" | "curvy" | "thick" | "voluptuous" | "extreme-voluptuous" | "bbw" | "";
+  height: "very-short" | "short" | "average" | "tall" | "very-tall" | "";
+  ageRange: "18-22" | "23-27" | "28-33" | "34-40" | "41-50" | "50+" | "";
+  ethnicity: string;
+  flirtationStyle: "bold-direct" | "subtle-deniability" | "physical-touchy" | "teasing-push-pull" | "acts-of-service" | "shy-stolen-glances" | "";
+  availabilityStatus: "single" | "divorced" | "its-complicated" | "taken" | "married-forbidden" | "";
+};
+
+export const DEFAULT_PHYSICAL_PROFILE: PhysicalProfile = {
+  bodyType: "",
+  height: "",
+  ageRange: "",
+  ethnicity: "",
+  flirtationStyle: "",
+  availabilityStatus: "",
+};
+
 export type EmotionalLogic = {
   wound: string;
   armor: string;
@@ -102,6 +120,7 @@ export type GenerationPayload = {
   selectedTemplates: string[];
   selectedBackstories: string[];
   selectedScenarios: string[];
+  physicalProfile: PhysicalProfile;
   emotionalLogic: EmotionalLogic;
   relationshipDynamic: RelationshipDynamic;
   voiceProfile: VoiceProfile;

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { generateCharacterDraft } from "@/lib/generation";
 import type { GenerationPayload } from "@/lib/types";
-import { DEFAULT_EMOTIONAL_LOGIC, DEFAULT_JOURNAL_CATEGORIES, DEFAULT_MC_PROFILE, DEFAULT_RELATIONSHIP_DYNAMIC, DEFAULT_VOICE_PROFILE } from "@/lib/types";
+import { DEFAULT_EMOTIONAL_LOGIC, DEFAULT_JOURNAL_CATEGORIES, DEFAULT_MC_PROFILE, DEFAULT_PHYSICAL_PROFILE, DEFAULT_RELATIONSHIP_DYNAMIC, DEFAULT_VOICE_PROFILE } from "@/lib/types";
 
 type BatchBody = Partial<GenerationPayload> & { temperatures?: number[] };
 
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
           selectedTemplates: body.selectedTemplates ?? [],
           selectedBackstories: body.selectedBackstories ?? [],
           selectedScenarios: body.selectedScenarios ?? [],
+          physicalProfile: body.physicalProfile ?? DEFAULT_PHYSICAL_PROFILE,
           emotionalLogic: body.emotionalLogic ?? DEFAULT_EMOTIONAL_LOGIC,
           relationshipDynamic: body.relationshipDynamic ?? DEFAULT_RELATIONSHIP_DYNAMIC,
           voiceProfile: body.voiceProfile ?? DEFAULT_VOICE_PROFILE,

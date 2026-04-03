@@ -17,6 +17,7 @@ import { VoiceBuilderForm } from "./voice-builder-form";
 import { ChemistryTool } from "./chemistry-tool";
 import { JournalCategoriesSelector } from "./journal-categories";
 import { MCProfileForm } from "./mc-profile-form";
+import { PhysicalProfileForm } from "./physical-profile-form";
 
 export function BriefForm({
   state,
@@ -52,7 +53,13 @@ export function BriefForm({
         />
       </div>
 
-      {/* 2. Backstory Architecture */}
+      {/* 2. Physical Profile & Demographics */}
+      <PhysicalProfileForm
+        physicalProfile={state.physicalProfile}
+        setPhysicalProfile={actions.setPhysicalProfile}
+      />
+
+      {/* 3. Backstory Architecture */}
       <BackstorySelector
         selected={state.selectedBackstories}
         setSelected={actions.setSelectedBackstories}

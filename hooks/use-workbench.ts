@@ -8,6 +8,7 @@ import type {
   JournalCategories,
   LibraryDocument,
   MCProfile,
+  PhysicalProfile,
   ProviderSettings,
   RelationshipDynamic,
   VoiceProfile,
@@ -16,6 +17,7 @@ import {
   DEFAULT_EMOTIONAL_LOGIC,
   DEFAULT_JOURNAL_CATEGORIES,
   DEFAULT_MC_PROFILE,
+  DEFAULT_PHYSICAL_PROFILE,
   DEFAULT_RELATIONSHIP_DYNAMIC,
   DEFAULT_VOICE_PROFILE,
 } from "@/lib/types";
@@ -59,6 +61,7 @@ export type WorkbenchState = {
   // Guided builder
   selectedBackstories: string[];
   selectedScenarios: string[];
+  physicalProfile: PhysicalProfile;
   emotionalLogic: EmotionalLogic;
   relationshipDynamic: RelationshipDynamic;
   voiceProfile: VoiceProfile;
@@ -82,6 +85,7 @@ export type WorkbenchActions = {
   setSexualProfile: Dispatch<SetStateAction<string>>;
   setSelectedBackstories: Dispatch<SetStateAction<string[]>>;
   setSelectedScenarios: Dispatch<SetStateAction<string[]>>;
+  setPhysicalProfile: Dispatch<SetStateAction<PhysicalProfile>>;
   setEmotionalLogic: Dispatch<SetStateAction<EmotionalLogic>>;
   setRelationshipDynamic: Dispatch<SetStateAction<RelationshipDynamic>>;
   setVoiceProfile: Dispatch<SetStateAction<VoiceProfile>>;
@@ -135,6 +139,7 @@ export function useWorkbench(props: {
   const [sexualProfile, setSexualProfile] = useState("");
   const [selectedBackstories, setSelectedBackstories] = useState<string[]>([]);
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
+  const [physicalProfile, setPhysicalProfile] = useState<PhysicalProfile>(DEFAULT_PHYSICAL_PROFILE);
   const [emotionalLogic, setEmotionalLogic] = useState<EmotionalLogic>(DEFAULT_EMOTIONAL_LOGIC);
   const [relationshipDynamic, setRelationshipDynamic] = useState<RelationshipDynamic>(DEFAULT_RELATIONSHIP_DYNAMIC);
   const [voiceProfile, setVoiceProfile] = useState<VoiceProfile>(DEFAULT_VOICE_PROFILE);
@@ -279,6 +284,7 @@ export function useWorkbench(props: {
             selectedTemplates: resolveTemplatePrompts(selectedTemplates),
             selectedBackstories,
             selectedScenarios,
+            physicalProfile,
             emotionalLogic,
             relationshipDynamic,
             voiceProfile,
@@ -319,6 +325,7 @@ export function useWorkbench(props: {
             selectedTemplates: resolveTemplatePrompts(selectedTemplates),
             selectedBackstories,
             selectedScenarios,
+            physicalProfile,
             emotionalLogic,
             relationshipDynamic,
             voiceProfile,
@@ -424,6 +431,7 @@ export function useWorkbench(props: {
     sexualProfile,
     selectedBackstories,
     selectedScenarios,
+    physicalProfile,
     emotionalLogic,
     relationshipDynamic,
     voiceProfile,
@@ -447,6 +455,7 @@ export function useWorkbench(props: {
     setSexualProfile,
     setSelectedBackstories,
     setSelectedScenarios,
+    setPhysicalProfile,
     setEmotionalLogic,
     setRelationshipDynamic,
     setVoiceProfile,
