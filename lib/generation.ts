@@ -104,6 +104,8 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 - Match tone to personality — this sets the template for ALL responses
 - Effectiveness varies between LLM versions
 - Avoid sarcasm unless you want a sarcastic Kin. Avoid sexual tone unless you want frequent references to it.
+- CRITICAL: The Example Message demonstrates IN-PERSON interaction. Do NOT use emojis, text abbreviations, or texting style in the EM. Texting style only applies when the character is literally sending a text message. The EM should use proper prose for actions and natural spoken dialogue in quotes.
+- Greetings are also in-person scenes — same rule: no emojis, no texting shorthand.
 
 **Journal Entries (max ~500 chars each, up to 8 keywords each) — CONDITIONAL INFLUENCE**
 - Only triggered when user messages contain matching keyphrases (case-insensitive)
@@ -291,6 +293,17 @@ Count carefully. When you write "(X characters)" after a section, X must be the 
 
 **Aim for 85-95% of each limit** to leave a small editing buffer while using the space well.
 
+## ANTI-REPETITION RULES — CRITICAL
+Each section has a specific job. Do NOT repeat the same information across multiple sections:
+- **Backstory** owns personality, behavioral patterns, emotional history, and how she relates to the MC. This is the ONLY place to explain WHY she is the way she is.
+- **Selfie Description** owns physical appearance and body. Do NOT re-describe her body in the backstory or journals.
+- **Avatar Prompt** owns face details. Do NOT list piercings/facial features again in the Selfie Description — reference them briefly if needed but don't re-catalog them.
+- **Key Memories** owns current factual context (where she lives, relationship status, recent events). Do NOT repeat backstory material here.
+- **Journal entries** own SPECIFIC topical knowledge triggered by keywords. Each journal must contain NEW information not already in the backstory. If the backstory already explains her family situation, the family journal should add DETAILS the backstory didn't cover, not restate the same narrative.
+- **RD** owns tone and style directives. Do NOT restate personality traits already in the backstory — use the RD for HOW she communicates, not WHO she is.
+
+If you find yourself writing the same sentence or concept in two sections, DELETE it from one.
+
 ## GENERAL RULES
 - Be concrete, avoid generic phrasing, infer reasonable missing details from the brief
 - Every personality trait must have a behavioral expression
@@ -299,7 +312,8 @@ Count carefully. When you write "(X characters)" after a section, X must be the 
 - Write backstory, RD, key memories, and journals in 3rd person
 - Include character counts in parentheses after EVERY code-block section
 - Avatar Prompt must describe FACE ONLY — no body, no clothing
-- Selfie Description must describe FULL BODY with NO specific clothing — this is a baseline for the selfie engine`;
+- Selfie Description must describe FULL BODY with NO specific clothing — this is a baseline for the selfie engine
+- Example Messages and Greetings are IN-PERSON scenes — no emojis, no text abbreviations, natural spoken dialogue only`;
 }
 
 export function buildUserPrompt(input: {
