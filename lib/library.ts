@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 
 import type { LibraryDocument } from "@/lib/types";
+import { readMetadataStore } from "@/lib/metadata";
 import { humanFileLabel, sanitizeFileName, stripMarkdown, truncate } from "@/lib/utils";
 
 const LIBRARY_DIR = path.join(process.cwd(), "PDF-Text");
@@ -23,13 +24,18 @@ function assertAllowedFileName(fileName: string) {
   return normalized;
 }
 
-async function readDocument(fileName: string): Promise<LibraryDocument> {
+async function readDocument(
+  fileName: string,
+  metaStore?: Record<string, { tags: string[]; favorite: boolean }>,
+): Promise<LibraryDocument> {
   const safeName = assertAllowedFileName(fileName);
   const absolutePath = path.join(LIBRARY_DIR, safeName);
   const [stats, content] = await Promise.all([
     fs.stat(absolutePath),
     fs.readFile(absolutePath, "utf8"),
   ]);
+
+  const meta = metaStore?.[safeName];
 
   return {
     fileName: safeName,
@@ -40,18 +46,34 @@ async function readDocument(fileName: string): Promise<LibraryDocument> {
     updatedAt: stats.mtime.toISOString(),
     preview: truncate(stripMarkdown(content), 220),
     content,
+    tags: meta?.tags ?? [],
+    favorite: meta?.favorite ?? false,
   };
 }
 
 export async function listLibraryDocuments() {
-  const entries = await fs.readdir(LIBRARY_DIR, { withFileTypes: true });
+  const [entries, metaStore] = await Promise.all([
+    fs.readdir(LIBRARY_DIR, { withFileTypes: true }),
+    readMetadataStore(),
+  ]);
+
   const files = entries
     .filter((entry) => entry.isFile())
     .map((entry) => entry.name)
     .filter((fileName) => ALLOWED_EXTENSIONS.has(path.extname(fileName).toLowerCase()))
     .sort((left, right) => left.localeCompare(right));
 
-  return Promise.all(files.map((fileName) => readDocument(fileName)));
+  const documents = await Promise.all(
+    files.map((fileName) => readDocument(fileName, metaStore)),
+  );
+
+  // Sort favorites to top, then alphabetical
+  documents.sort((a, b) => {
+    if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+    return a.fileName.localeCompare(b.fileName);
+  });
+
+  return documents;
 }
 
 export async function createLibraryDocument(input: {
@@ -93,8 +115,8 @@ export async function archiveLibraryDocument(fileName: string) {
   await fs.rename(sourcePath, archivePath);
 }
 
-export async function buildDocumentContext(selectedDocuments: string[], maxChars = 28000) {
-  const uniqueNames = Array.from(new Set(selectedDocuments)).slice(0, 10);
+export async function buildDocumentContext(selectedDocuments: string[], maxChars = 120000) {
+  const uniqueNames = Array.from(new Set(selectedDocuments)).slice(0, 25);
   const documents = await Promise.all(uniqueNames.map((fileName) => readDocument(fileName)));
 
   let consumed = 0;
@@ -114,8 +136,13 @@ export async function buildDocumentContext(selectedDocuments: string[], maxChars
   return parts.join("\n\n");
 }
 
+/**
+ * Default recommended docs when no brief is provided.
+ * Prioritizes core Kindroid guides by filename keywords.
+ */
 export function getRecommendedDocumentNames(documents: LibraryDocument[]) {
   const preferredKeywords = [
+    "ember",
     "foundation",
     "buildingacustomkindroid",
     "personality",
@@ -123,6 +150,7 @@ export function getRecommendedDocumentNames(documents: LibraryDocument[]) {
     "effectivebs",
     "behavior",
     "journals",
+    "memory",
   ];
 
   const ordered = [...documents].sort((left, right) => {
@@ -143,5 +171,81 @@ export function getRecommendedDocumentNames(documents: LibraryDocument[]) {
     return left.fileName.localeCompare(right.fileName);
   });
 
-  return ordered.slice(0, 6).map((document) => document.fileName);
+  return ordered.slice(0, 8).map((document) => document.fileName);
+}
+
+/**
+ * Smart doc selection: score each document's relevance to the brief
+ * by matching keywords from the brief against document content.
+ * Returns filenames sorted by relevance score (highest first).
+ */
+export function getSmartRecommendations(
+  documents: LibraryDocument[],
+  brief: string,
+  maxDocs = 12,
+): string[] {
+  if (!brief.trim()) {
+    return getRecommendedDocumentNames(documents);
+  }
+
+  // Extract meaningful words from the brief (3+ chars, lowercased)
+  const briefWords = brief
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length >= 3);
+
+  // Always-relevant core docs get a bonus
+  const coreDocs = [
+    "ember", "foundation", "buildingacustomkindroid", "effectivebs",
+    "personality", "behavior",
+  ];
+
+  const scored = documents.map((doc) => {
+    const nameLC = doc.fileName.toLowerCase();
+    const contentLC = doc.content.toLowerCase();
+
+    // Base score: core docs get a head start
+    let score = coreDocs.some((kw) => nameLC.includes(kw)) ? 5 : 0;
+
+    // Score based on brief keyword matches in document content
+    for (const word of briefWords) {
+      if (contentLC.includes(word)) {
+        score += 1;
+      }
+      if (nameLC.includes(word)) {
+        score += 3; // Filename match is very relevant
+      }
+    }
+
+    // Topic-specific boosts based on brief keywords
+    const topicMap: Record<string, string[]> = {
+      backstory: ["backstory", "advancedbackstory", "effectivebs"],
+      personality: ["personality", "behavior", "dynamism"],
+      journal: ["journals", "memory"],
+      memory: ["memory", "journals"],
+      greeting: ["foundation", "buildingacustomkindroid"],
+      voice: ["personality", "behavior"],
+      roleplay: ["behavior", "personality", "worldbuilding"],
+      selfie: ["selfie", "v6selfie"],
+    };
+
+    for (const [topic, docKeywords] of Object.entries(topicMap)) {
+      if (brief.toLowerCase().includes(topic)) {
+        for (const kw of docKeywords) {
+          if (nameLC.includes(kw)) {
+            score += 4;
+          }
+        }
+      }
+    }
+
+    return { fileName: doc.fileName, score };
+  });
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, maxDocs)
+    .filter((s) => s.score > 0)
+    .map((s) => s.fileName);
 }

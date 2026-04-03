@@ -49,8 +49,8 @@ export async function saveCharacterMarkdown(markdown: string) {
   return readCharacter(fileName);
 }
 
-export async function buildCharacterReferenceContext(selectedCharacters: string[], maxChars = 18000) {
-  const uniqueNames = Array.from(new Set(selectedCharacters)).slice(0, 4);
+export async function buildCharacterReferenceContext(selectedCharacters: string[], maxChars = 60000) {
+  const uniqueNames = Array.from(new Set(selectedCharacters)).slice(0, 8);
   const characters = await Promise.all(uniqueNames.map((fileName) => readCharacter(fileName)));
 
   let consumed = 0;

@@ -1,0 +1,250 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import type { CharacterSummary } from "@/lib/types";
+import { KINDROID_LIMITS } from "@/lib/types";
+import { parseCharacterSections, parseJournalEntries, parseGreetingEntries } from "@/lib/section-parser";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+
+function CopyField({
+  label,
+  kindroidLabel,
+  content,
+  charLimit,
+}: {
+  label: string;
+  kindroidLabel?: string;
+  content: string;
+  charLimit?: number;
+}) {
+  const [copied, setCopied] = useState(false);
+  const charCount = content.length;
+  const isOverLimit = charLimit ? charCount > charLimit : false;
+  const isNearLimit = charLimit ? charCount > charLimit * 0.9 : false;
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
+      const textarea = document.createElement("textarea");
+      textarea.value = content;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
+  if (!content.trim()) return null;
+
+  return (
+    <div className="rounded-lg border border-border bg-muted/20 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-muted/30">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-foreground">{label}</span>
+          {kindroidLabel && (
+            <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-accent/10 text-accent">
+              {kindroidLabel}
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {charLimit && (
+            <span
+              className={cn(
+                "font-mono text-xs",
+                isOverLimit
+                  ? "text-red-400 font-bold"
+                  : isNearLimit
+                    ? "text-yellow-400"
+                    : "text-muted-foreground",
+              )}
+            >
+              {charCount} / {charLimit}
+            </span>
+          )}
+          <Button
+            size="sm"
+            variant={copied ? "default" : "ghost"}
+            className={cn(
+              "h-7 px-2.5 text-xs",
+              copied
+                ? "bg-green-600/20 text-green-400 hover:bg-green-600/20"
+                : "text-primary hover:bg-primary/10",
+            )}
+            onClick={handleCopy}
+          >
+            {copied ? "Copied!" : "Copy"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-4 py-3">
+        <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-muted-foreground select-all">
+          {content}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+export function KindroidReadyView({
+  character,
+}: {
+  character: CharacterSummary;
+}) {
+  const sections = useMemo(
+    () => parseCharacterSections(character.content),
+    [character.content],
+  );
+
+  const sectionMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const s of sections) {
+      map.set(s.key, s.content);
+    }
+    return map;
+  }, [sections]);
+
+  const journals = useMemo(() => {
+    const raw = sectionMap.get("journal_entries") ?? "";
+    // The raw content may have ### headings embedded from the merge
+    return parseJournalEntries(raw);
+  }, [sectionMap]);
+
+  const greetings = useMemo(() => {
+    const raw = sectionMap.get("greeting_options") ?? "";
+    return parseGreetingEntries(raw);
+  }, [sectionMap]);
+
+  const name = sectionMap.get("name") ?? character.title;
+
+  return (
+    <ScrollArea className="h-[calc(100vh-220px)] min-h-[500px]">
+      <div className="space-y-3 pr-2 pb-4">
+        {/* Character name header */}
+        <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+          <h2 className="font-heading text-xl font-bold text-foreground">{name}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Copy each field below and paste into the matching Kindroid section.
+          </p>
+        </div>
+
+        {/* Overview - reference info, not a Kindroid field */}
+        {sectionMap.get("overview") && (
+          <CopyField
+            label="Overview"
+            kindroidLabel="Reference"
+            content={sectionMap.get("overview")!}
+          />
+        )}
+
+        <Separator className="bg-border/40" />
+
+        {/* === Primary Kindroid Fields === */}
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary px-1">
+          Kindroid Fields
+        </p>
+
+        <CopyField
+          label="Backstory"
+          kindroidLabel="Backstory field"
+          content={sectionMap.get("backstory") ?? ""}
+          charLimit={KINDROID_LIMITS.backstory}
+        />
+
+        <CopyField
+          label="Response Directive"
+          kindroidLabel="RD field"
+          content={sectionMap.get("response_directive") ?? ""}
+          charLimit={KINDROID_LIMITS.response_directive}
+        />
+
+        <CopyField
+          label="Key Memories"
+          kindroidLabel="Key Memories field"
+          content={sectionMap.get("key_memories") ?? ""}
+          charLimit={KINDROID_LIMITS.key_memories}
+        />
+
+        <CopyField
+          label="Example Message"
+          kindroidLabel="EM field"
+          content={sectionMap.get("example_message") ?? ""}
+          charLimit={KINDROID_LIMITS.example_message}
+        />
+
+        {/* === Avatar Fields === */}
+        {(sectionMap.get("avatar_description") || sectionMap.get("face_detail")) && (
+          <>
+            <Separator className="bg-border/40" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-accent px-1">
+              Avatar / Appearance
+            </p>
+
+            <CopyField
+              label="Avatar Description"
+              kindroidLabel="Avatar prompt"
+              content={sectionMap.get("avatar_description") ?? ""}
+            />
+
+            <CopyField
+              label="Face Detail"
+              kindroidLabel="Face detail"
+              content={sectionMap.get("face_detail") ?? ""}
+            />
+          </>
+        )}
+
+        {/* === Journal Entries - each one separate === */}
+        {journals.length > 0 && (
+          <>
+            <Separator className="bg-border/40" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary px-1">
+              Journal Entries ({journals.length})
+            </p>
+
+            {journals.map((journal, i) => (
+              <CopyField
+                key={i}
+                label={journal.title}
+                kindroidLabel="Journal"
+                content={journal.content}
+              />
+            ))}
+          </>
+        )}
+
+        {/* === Greeting Options - each one separate === */}
+        {greetings.length > 0 && (
+          <>
+            <Separator className="bg-border/40" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-accent px-1">
+              Greeting Options ({greetings.length})
+            </p>
+
+            {greetings.map((greeting, i) => (
+              <CopyField
+                key={i}
+                label={greeting.title}
+                kindroidLabel="Greeting"
+                content={greeting.content}
+              />
+            ))}
+          </>
+        )}
+      </div>
+    </ScrollArea>
+  );
+}

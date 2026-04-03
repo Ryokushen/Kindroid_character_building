@@ -1,27 +1,32 @@
 import { NextResponse } from "next/server";
 
-import { generateCharacterDraft } from "@/lib/generation";
-import type { GenerationPayload } from "@/lib/types";
+import { generateSectionDraft } from "@/lib/generation";
+import type { SectionRegenerationPayload } from "@/lib/types";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Partial<GenerationPayload>;
+    const body = (await request.json()) as Partial<SectionRegenerationPayload>;
+
+    if (!body.sectionKey || !body.sectionLabel) {
+      throw new Error("Section key and label are required.");
+    }
 
     if (!body.brief?.trim()) {
-      throw new Error("A character brief is required.");
+      throw new Error("Original brief is required for section regeneration.");
     }
 
     if (!body.provider?.baseUrl?.trim() || !body.provider?.model?.trim() || !body.provider?.apiKey?.trim()) {
       throw new Error("Base URL, model, and API key are required.");
     }
 
-    const markdown = await generateCharacterDraft({
+    const content = await generateSectionDraft({
+      sectionKey: body.sectionKey,
+      sectionLabel: body.sectionLabel,
+      currentContent: body.currentContent ?? "",
       brief: body.brief,
       notes: body.notes ?? "",
-      sexualProfile: body.sexualProfile ?? "",
+      fullCharacterContext: body.fullCharacterContext ?? "",
       selectedDocuments: body.selectedDocuments ?? [],
-      selectedCharacters: body.selectedCharacters ?? [],
-      selectedTemplates: body.selectedTemplates ?? [],
       provider: {
         providerLabel: body.provider.providerLabel ?? "Custom",
         baseUrl: body.provider.baseUrl,
@@ -31,12 +36,10 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ markdown });
+    return NextResponse.json({ content });
   } catch (error) {
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Unable to generate character draft.",
-      },
+      { error: error instanceof Error ? error.message : "Unable to regenerate section." },
       { status: 400 },
     );
   }

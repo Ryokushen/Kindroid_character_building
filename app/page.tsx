@@ -1,4 +1,4 @@
-import { Dashboard } from "@/components/dashboard";
+import { Workbench } from "@/components/workbench";
 import { listCharacters } from "@/lib/characters";
 import { getRecommendedDocumentNames, listLibraryDocuments } from "@/lib/library";
 
@@ -7,7 +7,7 @@ export default async function HomePage() {
   const recommendedDocuments = getRecommendedDocumentNames(documents);
 
   return (
-    <Dashboard
+    <Workbench
       initialDocuments={documents}
       initialCharacters={characters}
       recommendedDocuments={recommendedDocuments}
