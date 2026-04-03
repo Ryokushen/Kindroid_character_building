@@ -8,7 +8,8 @@ import { resolveTemplatePrompts } from "@/components/template-selector";
 const LOCAL_STORAGE_KEY = "kindroid-workbench-provider";
 
 const defaultProviderSettings: ProviderSettings = {
-  providerLabel: "OpenAI-compatible",
+  providerType: "openai",
+  providerLabel: "OpenAI",
   baseUrl: "https://api.openai.com/v1",
   model: "gpt-4.1-mini",
   apiKey: "",

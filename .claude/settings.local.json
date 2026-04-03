@@ -6,7 +6,14 @@
       "Bash(ls:*)",
       "Bash(python:*)",
       "Bash(python3:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(chmod +x /Users/charlesdorfeuille/Artificial/Kindroid_character_building/.claude/start-dev.sh)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(npx next:*)",
+      "Bash(wc -c /Users/charlesdorfeuille/Artificial/Kindroid_character_building/PDF-Text/*.txt /Users/charlesdorfeuille/Artificial/Kindroid_character_building/PDF-Text/*.md)",
+      "Bash(wc -c /Users/charlesdorfeuille/Artificial/Kindroid_character_building/characters/*.md)",
+      "Bash(git commit:*)"
     ]
   }
 }

@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       fullCharacterContext: body.fullCharacterContext ?? "",
       selectedDocuments: body.selectedDocuments ?? [],
       provider: {
+        providerType: body.provider.providerType ?? "openai",
         providerLabel: body.provider.providerLabel ?? "Custom",
         baseUrl: body.provider.baseUrl,
         model: body.provider.model,

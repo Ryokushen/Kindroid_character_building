@@ -19,7 +19,10 @@ export type CharacterSummary = {
   content: string;
 };
 
+export type ProviderType = "openai" | "anthropic" | "xai";
+
 export type ProviderSettings = {
+  providerType: ProviderType;
   providerLabel: string;
   baseUrl: string;
   model: string;

@@ -32,6 +32,7 @@ export async function POST(request: Request) {
           selectedCharacters: body.selectedCharacters ?? [],
           selectedTemplates: body.selectedTemplates ?? [],
           provider: {
+            providerType: body.provider!.providerType ?? "openai",
             providerLabel: body.provider!.providerLabel ?? "Custom",
             baseUrl: body.provider!.baseUrl!,
             model: body.provider!.model!,

@@ -1,4 +1,4 @@
-import type { GenerationPayload, SectionRegenerationPayload } from "@/lib/types";
+import type { GenerationPayload, ProviderType, SectionRegenerationPayload } from "@/lib/types";
 import { buildCharacterReferenceContext } from "@/lib/characters";
 import { buildDocumentContext } from "@/lib/library";
 
@@ -13,6 +13,19 @@ function normalizeCompletionsUrl(baseUrl: string) {
   }
 
   return `${trimmed}/chat/completions`;
+}
+
+function normalizeAnthropicUrl(baseUrl: string) {
+  const trimmed = baseUrl.trim().replace(/\/+$/, "");
+  if (!trimmed) {
+    throw new Error("Base URL is required.");
+  }
+
+  if (trimmed.endsWith("/messages")) {
+    return trimmed;
+  }
+
+  return `${trimmed}/messages`;
 }
 
 function cleanModelOutput(content: string) {
@@ -274,7 +287,7 @@ export function buildUserPrompt(input: {
   return parts.join("\n");
 }
 
-async function callModel(
+async function callOpenAICompatible(
   endpoint: string,
   apiKey: string,
   model: string,
@@ -315,13 +328,77 @@ async function callModel(
   return cleanModelOutput(content);
 }
 
+async function callAnthropic(
+  endpoint: string,
+  apiKey: string,
+  model: string,
+  temperature: number,
+  systemPrompt: string,
+  userPrompt: string,
+) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 8192,
+      temperature,
+      system: systemPrompt,
+      messages: [
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Anthropic request failed (${response.status}): ${errorText.slice(0, 300)}`);
+  }
+
+  const data = (await response.json()) as {
+    content?: Array<{ type: string; text?: string }>;
+  };
+
+  const textBlocks = data.content?.filter((b) => b.type === "text") ?? [];
+  const content = textBlocks.map((b) => b.text ?? "").join("\n");
+
+  if (!content.trim()) {
+    throw new Error("The Anthropic response did not contain any text.");
+  }
+
+  return cleanModelOutput(content);
+}
+
+async function callModel(
+  providerType: ProviderType,
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  temperature: number,
+  systemPrompt: string,
+  userPrompt: string,
+) {
+  if (providerType === "anthropic") {
+    const endpoint = normalizeAnthropicUrl(baseUrl);
+    return callAnthropic(endpoint, apiKey, model, temperature, systemPrompt, userPrompt);
+  }
+
+  // OpenAI and xAI both use the OpenAI-compatible format
+  const endpoint = normalizeCompletionsUrl(baseUrl);
+  return callOpenAICompatible(endpoint, apiKey, model, temperature, systemPrompt, userPrompt);
+}
+
 export async function generateCharacterDraft(payload: GenerationPayload) {
   const documentContext = await buildDocumentContext(payload.selectedDocuments);
   const characterContext = await buildCharacterReferenceContext(payload.selectedCharacters);
-  const endpoint = normalizeCompletionsUrl(payload.provider.baseUrl);
 
   return callModel(
-    endpoint,
+    payload.provider.providerType ?? "openai",
+    payload.provider.baseUrl,
     payload.provider.apiKey,
     payload.provider.model,
     payload.provider.temperature,
@@ -339,7 +416,6 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
 
 export async function generateSectionDraft(payload: SectionRegenerationPayload) {
   const documentContext = await buildDocumentContext(payload.selectedDocuments);
-  const endpoint = normalizeCompletionsUrl(payload.provider.baseUrl);
 
   const systemPrompt = [
     `You are regenerating ONLY the "${payload.sectionLabel}" section of a Kindroid character.`,
@@ -370,7 +446,8 @@ export async function generateSectionDraft(payload: SectionRegenerationPayload) 
   ].join("\n");
 
   return callModel(
-    endpoint,
+    payload.provider.providerType ?? "openai",
+    payload.provider.baseUrl,
     payload.provider.apiKey,
     payload.provider.model,
     payload.provider.temperature,

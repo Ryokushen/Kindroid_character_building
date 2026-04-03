@@ -15,10 +15,11 @@ export async function POST(request: Request) {
       selectedCharacters: body.selectedCharacters ?? [],
       selectedTemplates: body.selectedTemplates ?? [],
       provider: {
+        providerType: body.provider?.providerType ?? "openai",
         providerLabel: body.provider?.providerLabel ?? "",
         baseUrl: body.provider?.baseUrl ?? "",
         model: body.provider?.model ?? "",
-        apiKey: "", // Don't need API key for preview
+        apiKey: "",
         temperature: body.provider?.temperature ?? 0.8,
       },
     });
