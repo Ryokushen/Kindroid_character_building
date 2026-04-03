@@ -117,8 +117,8 @@ export type CharacterSectionKey =
   | "name"
   | "overview"
   | "backstory"
-  | "avatar_description"
-  | "face_detail"
+  | "avatar_prompt"
+  | "selfie_description"
   | "response_directive"
   | "example_message"
   | "key_memories"
@@ -141,6 +141,10 @@ export const KINDROID_LIMITS: Partial<Record<CharacterSectionKey | string, numbe
   response_directive: 250,
   key_memories: 1000,
   example_message: 750,
+  avatar_prompt: 200,
+  selfie_description: 800,
+  journal_entry: 500,
+  greeting: 730,
 };
 
 export type CharacterSection = {

@@ -3,8 +3,8 @@ import type { CharacterSection, CharacterSectionKey, JournalEntry, GreetingEntry
 const SECTION_PATTERNS: Array<{ key: CharacterSectionKey; label: string; pattern: RegExp }> = [
   { key: "overview", label: "Overview", pattern: /overview/i },
   { key: "backstory", label: "Backstory", pattern: /backstory/i },
-  { key: "avatar_description", label: "Avatar Description", pattern: /avatar\s*desc/i },
-  { key: "face_detail", label: "Face Detail", pattern: /face\s*detail/i },
+  { key: "avatar_prompt", label: "Avatar Prompt", pattern: /avatar\s*(prompt|desc)|face\s*detail/i },
+  { key: "selfie_description", label: "Selfie Description", pattern: /selfie\s*desc/i },
   { key: "response_directive", label: "Response Directive (RD)", pattern: /response\s*directive|^\s*rd\b/i },
   { key: "example_message", label: "Example Message (EM)", pattern: /example\s*message|^\s*em\b/i },
   { key: "key_memories", label: "Key Memories", pattern: /key\s*memor/i },

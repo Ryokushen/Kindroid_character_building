@@ -2,7 +2,8 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { CharacterSection, ProviderSettings } from "@/lib/types";
+import type { CharacterSection, CharacterSectionKey, ProviderSettings } from "@/lib/types";
+import { KINDROID_LIMITS } from "@/lib/types";
 import { parseCharacterSections, reassembleMarkdown } from "@/lib/section-parser";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -92,6 +93,17 @@ export function GenerationOutput({
 
   const hasSections = sections.length > 0;
 
+  const overLimitSections = useMemo(() => {
+    const violations: Array<{ label: string; count: number; limit: number }> = [];
+    for (const s of sections) {
+      const limit = KINDROID_LIMITS[s.key as CharacterSectionKey];
+      if (limit && s.content.length > limit) {
+        violations.push({ label: s.label, count: s.content.length, limit });
+      }
+    }
+    return violations;
+  }, [sections]);
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -105,6 +117,24 @@ export function GenerationOutput({
           Save to characters
         </Button>
       </div>
+
+      {overLimitSections.length > 0 && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3">
+          <p className="text-xs font-semibold text-red-400 mb-1">
+            Character limit exceeded ({overLimitSections.length} {overLimitSections.length === 1 ? "section" : "sections"})
+          </p>
+          <ul className="space-y-0.5">
+            {overLimitSections.map((v) => (
+              <li key={v.label} className="text-[11px] text-red-400/80">
+                {v.label}: {v.count} / {v.limit} chars ({v.count - v.limit} over)
+              </li>
+            ))}
+          </ul>
+          <p className="text-[10px] text-muted-foreground mt-1.5">
+            Edit sections below or regenerate to fit within Kindroid limits.
+          </p>
+        </div>
+      )}
 
       <Tabs defaultValue={hasSections ? "sections" : "raw"} className="w-full">
         <TabsList className="mb-2 bg-muted/50">

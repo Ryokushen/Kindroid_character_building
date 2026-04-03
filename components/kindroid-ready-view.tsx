@@ -185,24 +185,26 @@ export function KindroidReadyView({
           charLimit={KINDROID_LIMITS.example_message}
         />
 
-        {/* === Avatar Fields === */}
-        {(sectionMap.get("avatar_description") || sectionMap.get("face_detail")) && (
+        {/* === Visual Descriptor Fields === */}
+        {(sectionMap.get("avatar_prompt") || sectionMap.get("selfie_description")) && (
           <>
             <Separator className="bg-border/40" />
             <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-accent px-1">
-              Avatar / Appearance
+              Visual Descriptors
             </p>
 
             <CopyField
-              label="Avatar Description"
-              kindroidLabel="Avatar prompt"
-              content={sectionMap.get("avatar_description") ?? ""}
+              label="Avatar Prompt"
+              kindroidLabel="Face only"
+              content={sectionMap.get("avatar_prompt") ?? ""}
+              charLimit={KINDROID_LIMITS.avatar_prompt}
             />
 
             <CopyField
-              label="Face Detail"
-              kindroidLabel="Face detail"
-              content={sectionMap.get("face_detail") ?? ""}
+              label="Selfie Description"
+              kindroidLabel="Selfie engine baseline"
+              content={sectionMap.get("selfie_description") ?? ""}
+              charLimit={KINDROID_LIMITS.selfie_description}
             />
           </>
         )}
@@ -221,6 +223,7 @@ export function KindroidReadyView({
                 label={journal.title}
                 kindroidLabel="Journal"
                 content={journal.content}
+                charLimit={KINDROID_LIMITS.journal_entry}
               />
             ))}
           </>
@@ -240,6 +243,7 @@ export function KindroidReadyView({
                 label={greeting.title}
                 kindroidLabel="Greeting"
                 content={greeting.content}
+                charLimit={KINDROID_LIMITS.greeting}
               />
             ))}
           </>

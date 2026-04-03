@@ -114,7 +114,20 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 - KEYWORDS line format: "mom" "dad" "parents" (quoted, space-separated)
 - Entry format: factual paragraph about what the Kindroid knows
 
-**Greeting Options**
+**Avatar Prompt (max 200 chars) — FACE ONLY**
+- Used by Kindroid's avatar generator for the profile picture
+- Describe ONLY from the face/neck up: facial features, hair, skin tone, expression, eye color, distinguishing marks
+- Do NOT include body, clothing, or background
+- Must be under 200 characters including spaces
+
+**Selfie Description (max 800 chars) — FULL BODY BASELINE**
+- Used by Kindroid's selfie engine as a baseline to generate images across many scenarios
+- Describe the woman's full physical appearance: body type, build, proportions, skin, hair, distinguishing physical features
+- Do NOT include specific clothing or outfits — the selfie engine dresses her based on scenario
+- Be vivid and specific about physical traits: height, weight distribution, curves, muscle tone, posture, how she carries herself
+- This is the visual foundation for ALL generated images
+
+**Greeting Options (max ~730 chars each)**
 - First message the user sees. Sets the tone for the entire relationship.
 - Write multiple options (2-3) with different energy levels
 - Include character count in parentheses after each greeting
@@ -147,21 +160,25 @@ Return one complete Markdown document. Use this exact section order:
 \`\`\`
 full backstory written as behavioral code, not a novel. 3rd person.
 \`\`\`
+(X characters)
 
-## Avatar Description
+## Avatar Prompt
 \`\`\`
-detailed appearance prompt for AI image generation
+Face and head only. Facial features, hair, skin tone, expression, eye details. No body or clothing.
 \`\`\`
+(X characters — must be under 200)
 
-## Face Detail
+## Selfie Description
 \`\`\`
-face-specific details for portrait generation
+Full body physical description. Body type, proportions, build, skin, hair, distinguishing physical features. No clothing.
 \`\`\`
+(X characters — must be under 800)
 
 ## Response Directive (RD)
 \`\`\`
 [IMPT: response length directive.] Concise behavioral/tone directives. 3rd person.
 \`\`\`
+(X characters — must be under 250)
 
 ## Example Message (EM)
 \`\`\`
@@ -174,11 +191,13 @@ face-specific details for portrait generation
 "Dialogue here."
 *more action*
 \`\`\`
+(X characters — must be under 750)
 
 ## Key Memories
 \`\`\`
 Current factual context in 3rd person. Who they are to the user, where they live, current status.
 \`\`\`
+(X characters — must be under 1000)
 
 ## Journal Entries
 
@@ -241,18 +260,35 @@ Choose keywords that users would naturally type during intimate conversations. K
 \`\`\`
 (character count)
 
-## RULES
+## CHARACTER COUNT RULES — CRITICAL
+
+**Character counts include ALL characters: letters, spaces, punctuation, newlines, asterisks, brackets, quotes — everything inside the code block.**
+
+Count carefully. When you write "(X characters)" after a section, X must be the actual count of every character between the opening and closing code fence markers (excluding the markers themselves), with leading/trailing whitespace trimmed.
+
+**Hard limits — sections OVER these limits will be rejected:**
+| Field | Max Characters |
+|-------|---------------|
+| Backstory | 2500 |
+| Response Directive (RD) | 250 |
+| Key Memories | 1000 |
+| Example Message (EM) | 750 |
+| Avatar Prompt | 200 |
+| Selfie Description | 800 |
+| Journal entries (each) | 500 |
+| Greetings (each) | 730 |
+
+**Aim for 85-95% of each limit** to leave a small editing buffer while using the space well.
+
+## GENERAL RULES
 - Be concrete, avoid generic phrasing, infer reasonable missing details from the brief
 - Every personality trait must have a behavioral expression
-- Backstory must stay within ~2500 characters
-- RD must stay within ~250 characters
-- Key Memories within ~1000 characters
-- EM within ~750 characters
-- Journal entries within ~500 characters each with specific keyword triggers
 - If no sexual profile is provided, do not generate sexual behavior journals
 - If a sexual profile IS provided, generate dedicated sexual behavior journal entries as specified above
 - Write backstory, RD, key memories, and journals in 3rd person
-- Include character counts in parentheses for Backstory, RD, Key Memories, and EM sections`;
+- Include character counts in parentheses after EVERY code-block section
+- Avatar Prompt must describe FACE ONLY — no body, no clothing
+- Selfie Description must describe FULL BODY with NO specific clothing — this is a baseline for the selfie engine`;
 }
 
 export function buildUserPrompt(input: {

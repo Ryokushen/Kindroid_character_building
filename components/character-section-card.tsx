@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { CharacterSection } from "@/lib/types";
+import type { CharacterSection, CharacterSectionKey } from "@/lib/types";
+import { KINDROID_LIMITS } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+function getCharLimit(key: CharacterSectionKey): number | undefined {
+  return KINDROID_LIMITS[key];
+}
 
 export function CharacterSectionCard({
   section,
@@ -20,10 +25,14 @@ export function CharacterSectionCard({
   onRegenerate: (key: string) => void;
 }) {
   const [open, setOpen] = useState(true);
+  const charLimit = getCharLimit(section.key);
+  const charCount = section.content.length;
+  const isOverLimit = charLimit ? charCount > charLimit : false;
+  const isNearLimit = charLimit ? charCount > charLimit * 0.9 : false;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-border bg-muted/20 overflow-hidden">
+      <div className={cn("rounded-lg border bg-muted/20 overflow-hidden", isOverLimit ? "border-red-500/50" : "border-border")}>
         <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors hover:bg-muted/40">
           <div className="flex items-center gap-2">
             <svg
@@ -35,6 +44,20 @@ export function CharacterSectionCard({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
             <span className="text-sm font-semibold text-foreground">{section.label}</span>
+            {charLimit && (
+              <span
+                className={cn(
+                  "font-mono text-[11px]",
+                  isOverLimit
+                    ? "text-red-400 font-bold"
+                    : isNearLimit
+                      ? "text-yellow-400"
+                      : "text-muted-foreground",
+                )}
+              >
+                {charCount} / {charLimit}
+              </span>
+            )}
             {section.isCodeBlock && (
               <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-accent/10 text-accent">
                 code block
