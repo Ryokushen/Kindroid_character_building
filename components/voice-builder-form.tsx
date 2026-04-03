@@ -86,6 +86,10 @@ export function VoiceBuilderForm({
             { value: "fragments" as const, label: "Fragments" },
             { value: "emoji-heavy" as const, label: "Emoji heavy" },
             { value: "voice-note" as const, label: "Voice-note style" },
+            { value: "lowercase-no-punctuation" as const, label: "Lowercase no punctuation" },
+            { value: "proper-grammar" as const, label: "Proper grammar" },
+            { value: "meme-heavy" as const, label: "Meme heavy" },
+            { value: "poetic" as const, label: "Poetic / lyrical" },
           ]}
           value={voiceProfile.textingStyle}
           onChange={(v) => update("textingStyle", v)}
@@ -99,6 +103,9 @@ export function VoiceBuilderForm({
             { value: "witty-banter" as const, label: "Witty banter" },
             { value: "dark-humor" as const, label: "Dark humor" },
             { value: "physical-comedy" as const, label: "Physical comedy" },
+            { value: "playful-teasing" as const, label: "Playful teasing" },
+            { value: "deadpan" as const, label: "Deadpan" },
+            { value: "flirty-innuendo" as const, label: "Flirty innuendo" },
             { value: "none" as const, label: "Not funny" },
           ]}
           value={voiceProfile.humorStyle}

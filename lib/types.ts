@@ -48,10 +48,10 @@ export type RelationshipDynamic = {
 };
 
 export type VoiceProfile = {
-  textingStyle: "full-sentences" | "fragments" | "emoji-heavy" | "voice-note" | "";
+  textingStyle: "full-sentences" | "fragments" | "emoji-heavy" | "voice-note" | "lowercase-no-punctuation" | "proper-grammar" | "meme-heavy" | "poetic" | "";
   verbalTics: string;
   codeSwitching: string;
-  humorStyle: "dry-sarcasm" | "physical-comedy" | "self-deprecating" | "witty-banter" | "dark-humor" | "none" | "";
+  humorStyle: "dry-sarcasm" | "physical-comedy" | "self-deprecating" | "witty-banter" | "dark-humor" | "playful-teasing" | "deadpan" | "flirty-innuendo" | "none" | "";
 };
 
 export type JournalCategories = {
@@ -60,6 +60,35 @@ export type JournalCategories = {
   emotionalTriggers: boolean;
   relationshipMilestones: boolean;
   seasonalSituational: boolean;
+  workCareer: boolean;
+  hobbiesPassions: boolean;
+  insecuritiesFears: boolean;
+  conflictStyle: boolean;
+  friendsSocialLife: boolean;
+};
+
+// --- Male MC Profile ---
+
+export type MCProfile = {
+  name: string;
+  age: string;
+  occupation: string;
+  personality: string;
+  livingSituation: string;
+  backstory: string;
+  lookingFor: string;
+  howOthersPerceive: string;
+};
+
+export const DEFAULT_MC_PROFILE: MCProfile = {
+  name: "",
+  age: "",
+  occupation: "",
+  personality: "",
+  livingSituation: "",
+  backstory: "",
+  lookingFor: "",
+  howOthersPerceive: "",
 };
 
 // --- Generation payload ---
@@ -78,6 +107,7 @@ export type GenerationPayload = {
   voiceProfile: VoiceProfile;
   contrastNotes: string;
   journalCategories: JournalCategories;
+  mcProfile: MCProfile;
   provider: ProviderSettings;
 };
 
@@ -161,4 +191,9 @@ export const DEFAULT_JOURNAL_CATEGORIES: JournalCategories = {
   emotionalTriggers: false,
   relationshipMilestones: false,
   seasonalSituational: false,
+  workCareer: false,
+  hobbiesPassions: false,
+  insecuritiesFears: false,
+  conflictStyle: false,
+  friendsSocialLife: false,
 };

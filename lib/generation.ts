@@ -119,6 +119,14 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 - Write multiple options (2-3) with different energy levels
 - Include character count in parentheses after each greeting
 
+### MALE MAIN CHARACTER INTEGRATION
+When a male MC profile is provided, weave his details naturally into the character's world:
+- **Key Memories** should reference the MC by name and establish their current relationship status
+- **Backstory** should include how she perceives him and what drew her to him, written from her behavioral perspective
+- **Journal entries** should reference shared experiences or her feelings about specific things the MC does
+- **Greeting options** should address the MC naturally (use his name if provided)
+- Do NOT make the female character's entire identity revolve around the MC — she must have a full life outside of him
+
 ### CRITICAL PRINCIPLES
 - The Kindroid mirrors the user's tone if its personality isn't strongly anchored
 - The stronger the personality, the harder it is for mirroring to take over
@@ -261,14 +269,36 @@ export function buildUserPrompt(input: {
   voiceProfile?: import("@/lib/types").VoiceProfile;
   contrastNotes?: string;
   journalCategories?: import("@/lib/types").JournalCategories;
+  mcProfile?: import("@/lib/types").MCProfile;
 }) {
-  const parts = [
+  const parts: string[] = [];
+
+  // MC Profile context (if provided)
+  const mc = input.mcProfile;
+  if (mc && (mc.name || mc.age || mc.occupation || mc.personality || mc.livingSituation || mc.backstory || mc.lookingFor || mc.howOthersPerceive)) {
+    const mcBullets: string[] = [];
+    if (mc.name) mcBullets.push(`- Name: ${mc.name}`);
+    if (mc.age) mcBullets.push(`- Age: ${mc.age}`);
+    if (mc.occupation) mcBullets.push(`- Occupation: ${mc.occupation}`);
+    if (mc.livingSituation) mcBullets.push(`- Living situation: ${mc.livingSituation}`);
+    if (mc.personality) mcBullets.push(`- Personality: ${mc.personality}`);
+    if (mc.backstory) mcBullets.push(`- Backstory: ${mc.backstory}`);
+    if (mc.lookingFor) mcBullets.push(`- What he's looking for: ${mc.lookingFor}`);
+    if (mc.howOthersPerceive) mcBullets.push(`- How others perceive him: ${mc.howOthersPerceive}`);
+    parts.push(
+      "Male main character (the user) — build the female character's relationship, Key Memories, and backstory references around this person:",
+      mcBullets.join("\n"),
+      "",
+    );
+  }
+
+  parts.push(
     "Character brief:",
     input.brief.trim(),
     "",
     "Additional notes:",
     input.notes.trim() || "None provided.",
-  ];
+  );
 
   // Backstory architecture
   if (input.backstoryAdditions && input.backstoryAdditions.length > 0) {
@@ -346,6 +376,11 @@ export function buildUserPrompt(input: {
     if (jc.emotionalTriggers) categories.push("Emotional triggers (what sets them off, what calms them)");
     if (jc.relationshipMilestones) categories.push("Relationship milestones (first kiss, first fight, inside jokes)");
     if (jc.seasonalSituational) categories.push("Seasonal and situational (holidays, birthdays, weather reactions)");
+    if (jc.workCareer) categories.push("Work and career (job details, coworkers, ambitions, work stress)");
+    if (jc.hobbiesPassions) categories.push("Hobbies and passions (creative outlets, obsessions, guilty pleasures)");
+    if (jc.insecuritiesFears) categories.push("Insecurities and fears (body image, social anxiety, deepest fears)");
+    if (jc.conflictStyle) categories.push("Conflict style (how she fights, what she does after arguments, forgiveness patterns)");
+    if (jc.friendsSocialLife) categories.push("Friends and social life (best friend dynamics, social habits, who she calls when upset)");
     if (categories.length > 0) {
       parts.push(
         "",
@@ -498,6 +533,7 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
       voiceProfile: payload.voiceProfile,
       contrastNotes: payload.contrastNotes,
       journalCategories: payload.journalCategories,
+      mcProfile: payload.mcProfile,
     }),
   );
 }
@@ -567,6 +603,7 @@ export async function buildPromptPreview(payload: GenerationPayload) {
     voiceProfile: payload.voiceProfile,
     contrastNotes: payload.contrastNotes,
     journalCategories: payload.journalCategories,
+    mcProfile: payload.mcProfile,
   });
 
   return {

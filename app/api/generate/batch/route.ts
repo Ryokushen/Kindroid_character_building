@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { generateCharacterDraft } from "@/lib/generation";
 import type { GenerationPayload } from "@/lib/types";
-import { DEFAULT_EMOTIONAL_LOGIC, DEFAULT_JOURNAL_CATEGORIES, DEFAULT_RELATIONSHIP_DYNAMIC, DEFAULT_VOICE_PROFILE } from "@/lib/types";
+import { DEFAULT_EMOTIONAL_LOGIC, DEFAULT_JOURNAL_CATEGORIES, DEFAULT_MC_PROFILE, DEFAULT_RELATIONSHIP_DYNAMIC, DEFAULT_VOICE_PROFILE } from "@/lib/types";
 
 type BatchBody = Partial<GenerationPayload> & { temperatures?: number[] };
 
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
           voiceProfile: body.voiceProfile ?? DEFAULT_VOICE_PROFILE,
           contrastNotes: body.contrastNotes ?? "",
           journalCategories: body.journalCategories ?? DEFAULT_JOURNAL_CATEGORIES,
+          mcProfile: body.mcProfile ?? DEFAULT_MC_PROFILE,
           provider: {
             providerType: body.provider!.providerType ?? "openai",
             providerLabel: body.provider!.providerLabel ?? "Custom",

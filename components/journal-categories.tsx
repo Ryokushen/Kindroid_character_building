@@ -17,6 +17,11 @@ const CATEGORIES: Array<{
   { key: "emotionalTriggers", label: "Emotional triggers", description: "What sets them off, what calms them, stress responses" },
   { key: "relationshipMilestones", label: "Relationship milestones", description: "First kiss, first fight, inside jokes, turning points" },
   { key: "seasonalSituational", label: "Seasonal & situational", description: "Holidays, birthdays, weather reactions, seasonal moods" },
+  { key: "workCareer", label: "Work & career", description: "Job details, coworkers, ambitions, work stress, daily commute" },
+  { key: "hobbiesPassions", label: "Hobbies & passions", description: "What she does for fun, creative outlets, obsessions, guilty pleasures" },
+  { key: "insecuritiesFears", label: "Insecurities & fears", description: "Body image, social anxiety, what keeps her up at night, deepest fears" },
+  { key: "conflictStyle", label: "Conflict style", description: "How she fights, what she does after arguments, silent treatment vs. explosive" },
+  { key: "friendsSocialLife", label: "Friends & social life", description: "Best friend dynamics, social habits, party behavior, who she calls when upset" },
 ];
 
 export function JournalCategoriesSelector({

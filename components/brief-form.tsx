@@ -16,6 +16,7 @@ import { ScenarioSelector } from "./scenario-selector";
 import { VoiceBuilderForm } from "./voice-builder-form";
 import { ChemistryTool } from "./chemistry-tool";
 import { JournalCategoriesSelector } from "./journal-categories";
+import { MCProfileForm } from "./mc-profile-form";
 
 export function BriefForm({
   state,
@@ -33,6 +34,12 @@ export function BriefForm({
 
   return (
     <div className="space-y-3">
+      {/* 0. Male MC Profile */}
+      <MCProfileForm
+        mcProfile={state.mcProfile}
+        setMCProfile={actions.setMCProfile}
+      />
+
       {/* 1. Brief textarea */}
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Character brief</Label>
