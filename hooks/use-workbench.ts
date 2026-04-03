@@ -6,6 +6,7 @@ import type { CharacterSummary, LibraryDocument, ProviderSettings } from "@/lib/
 import { resolveTemplatePrompts } from "@/components/template-selector";
 
 const LOCAL_STORAGE_KEY = "kindroid-workbench-provider";
+const API_KEYS_STORAGE_KEY = "kindroid-workbench-api-keys";
 
 const defaultProviderSettings: ProviderSettings = {
   providerType: "openai",
@@ -100,19 +101,40 @@ export function useWorkbench(props: {
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [sexualProfile, setSexualProfile] = useState("");
 
+  // Load saved provider settings + per-provider API keys
   useEffect(() => {
-    const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!stored) return;
     try {
-      const parsed = JSON.parse(stored) as Partial<ProviderSettings>;
-      setProvider((current) => ({ ...current, ...parsed, apiKey: parsed.apiKey ?? "" }));
+      const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Partial<ProviderSettings>;
+        const keysRaw = window.localStorage.getItem(API_KEYS_STORAGE_KEY);
+        const savedKeys = keysRaw ? (JSON.parse(keysRaw) as Record<string, string>) : {};
+        const providerType = parsed.providerType ?? "openai";
+        setProvider((current) => ({
+          ...current,
+          ...parsed,
+          apiKey: savedKeys[providerType] ?? parsed.apiKey ?? "",
+        }));
+      }
     } catch {
       // Ignore invalid stored settings.
     }
   }, []);
 
+  // Persist provider settings + save API key for current provider type
   useEffect(() => {
     window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(provider));
+    // Save this provider's API key separately
+    if (provider.apiKey) {
+      try {
+        const keysRaw = window.localStorage.getItem(API_KEYS_STORAGE_KEY);
+        const savedKeys = keysRaw ? (JSON.parse(keysRaw) as Record<string, string>) : {};
+        savedKeys[provider.providerType] = provider.apiKey;
+        window.localStorage.setItem(API_KEYS_STORAGE_KEY, JSON.stringify(savedKeys));
+      } catch {
+        // Ignore storage errors
+      }
+    }
   }, [provider]);
 
   const activeDocumentRecord = useMemo(

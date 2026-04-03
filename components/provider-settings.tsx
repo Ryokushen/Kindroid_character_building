@@ -86,12 +86,25 @@ export function ProviderSettings({
   }
 
   function selectPreset(preset: (typeof PROVIDER_PRESETS)[number]) {
+    // Load saved API key for the target provider
+    let savedKey = "";
+    try {
+      const keysRaw = window.localStorage.getItem("kindroid-workbench-api-keys");
+      if (keysRaw) {
+        const savedKeys = JSON.parse(keysRaw) as Record<string, string>;
+        savedKey = savedKeys[preset.type] ?? "";
+      }
+    } catch {
+      // Ignore
+    }
+
     setProvider((c) => ({
       ...c,
       providerType: preset.type,
       providerLabel: preset.label,
       baseUrl: preset.baseUrl,
       model: preset.defaultModel,
+      apiKey: savedKey,
     }));
   }
 
