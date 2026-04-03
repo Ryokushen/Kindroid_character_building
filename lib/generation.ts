@@ -656,13 +656,39 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
 export async function generateSectionDraft(payload: SectionRegenerationPayload) {
   const documentContext = await buildDocumentContext(payload.selectedDocuments);
 
+  const limitMap: Record<string, number> = {
+    backstory: 2500,
+    response_directive: 250,
+    key_memories: 1000,
+    example_message: 750,
+    avatar_prompt: 200,
+    selfie_description: 800,
+    journal_entries: 500,
+    greeting_options: 730,
+  };
+
+  const charLimit = limitMap[payload.sectionKey];
+  const limitInstruction = charLimit
+    ? `\n\nHARD CHARACTER LIMIT: The output MUST be under ${charLimit} characters total (including spaces, punctuation, newlines — everything). Aim for ${Math.round(charLimit * 0.9)} characters. Count carefully. This is non-negotiable.`
+    : "";
+
+  const sectionRules: Record<string, string> = {
+    avatar_prompt: "\nThis is a FACE-ONLY prompt. Describe only face, hair, skin tone, expression, eye details. No body, no clothing, no background. Must be under 200 characters.",
+    selfie_description: "\nThis is a FULL BODY physical description for the selfie engine. Describe body type, proportions, build, skin, hair, distinguishing features. Do NOT include any specific clothing — the selfie engine dresses her based on scenario. Must be under 800 characters.",
+    example_message: "\nThis is an IN-PERSON interaction demonstration. Use *asterisks* for actions and \"quotes\" for speech. Do NOT use emojis or texting style — this is face-to-face dialogue.",
+    greeting_options: "\nGreetings are IN-PERSON scenes. No emojis, no texting shorthand. Use *asterisks* for actions and \"quotes\" for speech. Each greeting must be under 730 characters.",
+  };
+
+  const extraRules = sectionRules[payload.sectionKey] ?? "";
+
   const systemPrompt = [
     `You are regenerating ONLY the "${payload.sectionLabel}" section of a Kindroid character.`,
     "Here is the full character for context. Return ONLY the content for this specific section, nothing else.",
     "Do not include the section heading — just the content itself.",
     "If the section normally uses a code block, return the content without the code fence markers.",
     "Be concrete, avoid generic phrasing.",
-    "Respect Kindroid field limits: Backstory ~2500 chars, RD ~250 chars, Key Memories ~1000 chars, EM ~750 chars, Journals ~500 chars each.",
+    "Do NOT repeat information that belongs in other sections — each section has a specific job.",
+    limitInstruction + extraRules,
   ].join("\n");
 
   const userPrompt = [
