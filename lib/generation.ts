@@ -100,12 +100,13 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 
 **Example Message / EM (max ~750 chars) — MODERATE-TO-STRONG INFLUENCE**
 - Shows the AI HOW to respond through demonstration of voice, formatting, emotional depth, pacing
-- Use *asterisks* for actions, "quotes" for speech
+- CRITICAL: Write the Example Message in FIRST PERSON from the character's perspective. She narrates her own actions using "I" — e.g., *I lean against the counter and tilt my head.* "You're back again?"
+- Use *asterisks* for actions, "quotes" for speech — all in first person
 - Match tone to personality — this sets the template for ALL responses
 - Effectiveness varies between LLM versions
 - Avoid sarcasm unless you want a sarcastic Kin. Avoid sexual tone unless you want frequent references to it.
-- CRITICAL: The Example Message demonstrates IN-PERSON interaction. Do NOT use emojis, text abbreviations, or texting style in the EM. Texting style only applies when the character is literally sending a text message. The EM should use proper prose for actions and natural spoken dialogue in quotes.
-- Greetings are also in-person scenes — same rule: no emojis, no texting shorthand.
+- Do NOT use emojis, text abbreviations, or texting style in the EM. Texting style only applies when the character is literally sending a text message.
+- Greetings are also first person, in-person scenes — same rules: no emojis, no texting shorthand, first person narration.
 
 **Journal Entries (max ~500 chars each, up to 8 keywords each) — CONDITIONAL INFLUENCE**
 - Only triggered when user messages contain matching keyphrases (case-insensitive)
@@ -189,7 +190,7 @@ Full body physical description. Body type, proportions, build, skin, hair, disti
 
 ## Response Directive (RD)
 \`\`\`
-[IMPT: response length directive.] Concise behavioral/tone directives. 3rd person.
+[IMPT: response length directive.] [IMPT: Write in first person. Use *asterisks* for actions, "quotes" for speech.] Concise behavioral/tone directives.
 \`\`\`
 (X characters — must be under 250)
 
@@ -200,9 +201,9 @@ Full body physical description. Body type, proportions, build, skin, hair, disti
 #Rule 2
 [IMPT: formatting directive]
 
-*action description*
-"Dialogue here."
-*more action*
+*I do something — first person action narration.*
+"Dialogue here — I speak naturally."
+*I continue the scene, describing what I do and notice.*
 \`\`\`
 (X characters — must be under 750)
 
@@ -275,15 +276,15 @@ Keep each entry under 500 characters. Be specific and behavioral — describe wh
 
 ### Greeting 1 — Energy/Mood Label
 \`\`\`
-*action and scene-setting*
-"Opening dialogue."
-*continued scene*
+*I set the scene — first person, what I'm doing when the user arrives.*
+"Opening dialogue — I speak naturally."
+*I continue, describing my actions and reactions.*
 \`\`\`
 (character count)
 
 ### Greeting 2 — Energy/Mood Label
 \`\`\`
-*different approach/energy*
+*I open differently — different energy, different moment.*
 "Different opening."
 \`\`\`
 (character count)
@@ -719,8 +720,8 @@ export async function generateSectionDraft(payload: SectionRegenerationPayload) 
   const sectionRules: Record<string, string> = {
     avatar_prompt: "\nThis is a FACE-ONLY prompt. Describe only face, hair, skin tone, expression, eye details. No body, no clothing, no background. Must be under 200 characters.",
     selfie_description: "\nThis is a FULL BODY physical description for the selfie engine. Describe body type, proportions, build, skin, hair, distinguishing features. Do NOT include any specific clothing — the selfie engine dresses her based on scenario. Must be under 800 characters.",
-    example_message: "\nThis is an IN-PERSON interaction demonstration. Use *asterisks* for actions and \"quotes\" for speech. Do NOT use emojis or texting style — this is face-to-face dialogue.",
-    greeting_options: "\nGreetings are IN-PERSON scenes. No emojis, no texting shorthand. Use *asterisks* for actions and \"quotes\" for speech. Each greeting must be under 730 characters.",
+    example_message: "\nWrite in FIRST PERSON from the character's perspective — she narrates using 'I'. Use *asterisks* for actions and \"quotes\" for speech. Example: *I lean against the counter.* \"You're back again?\" Do NOT use emojis or texting style — this is face-to-face dialogue.",
+    greeting_options: "\nGreetings are FIRST PERSON, IN-PERSON scenes. The character narrates using 'I'. No emojis, no texting shorthand. Use *asterisks* for actions and \"quotes\" for speech. Each greeting must be under 730 characters.",
   };
 
   const extraRules = sectionRules[payload.sectionKey] ?? "";
