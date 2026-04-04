@@ -76,7 +76,9 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 - Used by Kindroid's selfie engine as a baseline to generate images across many scenarios
 - Describe the woman's full physical appearance: body type, build, proportions, skin, hair, distinguishing physical features
 - Do NOT include specific clothing or outfits — the selfie engine dresses her based on scenario
-- Be vivid and specific about physical traits: height, weight distribution, curves, muscle tone, posture, how she carries herself
+- Be vivid and specific about physical traits: height, proportions, curves, muscle tone, posture
+- CRITICAL FOR IMAGE GENERATION: Avoid words like "heavy," "carries weight," "soft stomach," "lush" — these make AI image generators produce overweight results. Instead use precise proportion language: "narrow waist," "flat stomach," "toned midsection," "wide hips," "large breasts." Describe the SHAPE, not the weight.
+- For extreme voluptuous body types: emphasize the dramatic contrast between tiny waist and large curves. These are exaggerated hourglass proportions, not plus-size.
 - This is the visual foundation for ALL generated images
 
 **BODY TYPE REFERENCE — use these definitions when a body type is specified:**
@@ -88,7 +90,7 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 | Curvy | Hourglass proportioned | Clear waist-to-hip ratio, moderate-to-full breasts, round hips, still proportional. Classic feminine shape. |
 | Thick | Heavy lower body, wide hips | Big thighs, big butt, wider hips. Carries weight specifically in hips, thighs, and ass. May or may not have large breasts. |
 | Voluptuous | Full-figured, large everywhere | Large breasts, wide hips, thick thighs, soft stomach. Lush and womanly, not gym-toned. |
-| Extreme Voluptuous | Exaggerated proportions | Oversized breasts, very wide hips, dramatically thick thighs and ass, tiny waist by contrast. Proportions that turn heads and strain clothing. The first thing anyone notices. |
+| Extreme Voluptuous | Exaggerated hourglass, anime-tier proportions | Impossibly large breasts, dramatically wide hips, very thick thighs and a round heavy ass, but with a tight narrow waist and flat toned stomach. The proportions are extreme and top-heavy — she looks drawn, not overweight. No soft midsection, no weight-distribution language. Think exaggerated hourglass, not plus-size. Proportions that strain clothing and turn every head in the room. |
 
 **Greeting Options (max ~730 chars each)**
 - First message the user sees. Sets the tone for the entire relationship.

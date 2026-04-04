@@ -49,7 +49,7 @@ const BODY_TYPES = [
   {
     name: "Extreme Voluptuous",
     description:
-      "Oversized breasts, very wide hips, dramatically thick thighs and ass, tiny waist by contrast. Proportions that turn heads.",
+      "Exaggerated hourglass, anime-tier proportions. Impossibly large breasts, dramatically wide hips, very thick thighs, but with a tight narrow waist and flat toned stomach. Not plus-size — think pinup/anime proportions that strain clothing.",
   },
 ]
 
