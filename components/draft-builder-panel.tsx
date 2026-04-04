@@ -139,6 +139,14 @@ export function DraftBuilderPanel({
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="secondary"
+              onClick={actions.handleSurpriseMeSingle}
+              disabled={state.isWorking}
+              className="bg-primary/10 text-primary hover:bg-primary/15"
+            >
+              {state.isWorking ? "Generating..." : "Surprise Me x1"}
+            </Button>
+            <Button
+              variant="secondary"
               onClick={actions.handleSurpriseMe}
               disabled={state.isWorking}
               className="bg-primary/10 text-primary hover:bg-primary/15"
@@ -151,6 +159,9 @@ export function DraftBuilderPanel({
               </p>
             )}
           </div>
+          <p className="text-[10px] text-muted-foreground">
+            Set body type, ethnicity, kinks, etc. in the builder tabs first to lock them in. Everything you leave empty gets randomized.
+          </p>
         </div>
 
         <BriefForm state={state} actions={actions} />

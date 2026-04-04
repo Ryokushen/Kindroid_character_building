@@ -127,6 +127,7 @@ export type WorkbenchActions = {
   handleGenerate: () => void;
   handleBatchGenerate: () => void;
   handleSurpriseMe: () => void;
+  handleSurpriseMeSingle: () => void;
   handleSelectBatchResult: (index: number) => void;
   handleRemixBatchResult: (index: number) => void;
   handleRateBatchResult: (index: number, reaction: DiscoveryReaction) => void;
@@ -559,10 +560,24 @@ export function useWorkbench(props: {
     }
   }
 
+  function getLockedFields() {
+    const pp = physicalProfile;
+    const hasPhysical = pp.bodyType || pp.height || pp.ageRange || pp.ethnicity || pp.eyeColor || pp.distinguishingFeatures.length > 0 || pp.flirtationStyle || pp.availabilityStatus;
+    const hasKinks = selectedKinks.length > 0;
+    const hasSexProfile = sexualProfile.trim();
+    if (!hasPhysical && !hasKinks && !hasSexProfile) return undefined;
+    return {
+      physicalProfile: hasPhysical ? pp : undefined,
+      selectedKinks: hasKinks ? selectedKinks : undefined,
+      sexualProfile: hasSexProfile ? sexualProfile : undefined,
+    };
+  }
+
   function handleSurpriseMe() {
     const preset = buildDiscoveryPreset({
       mode: discoveryMode,
       preferences: discoveryPreferences,
+      lockedFields: getLockedFields(),
     });
     const snapshot = getBuilderSnapshot({
       brief: preset.brief,
@@ -609,6 +624,60 @@ export function useWorkbench(props: {
     })();
   }
 
+  function handleSurpriseMeSingle() {
+    const preset = buildDiscoveryPreset({
+      mode: discoveryMode,
+      preferences: discoveryPreferences,
+      lockedFields: getLockedFields(),
+    });
+    const snapshot = getBuilderSnapshot({
+      brief: preset.brief,
+      notes: preset.notes,
+      sexualProfile: preset.sexualProfile,
+      selectedCharacters: [],
+      selectedTemplates: preset.selectedTemplates,
+      selectedBackstories: preset.selectedBackstories,
+      selectedScenarios: preset.selectedScenarios,
+      howTheyMet: preset.howTheyMet,
+      physicalProfile: preset.physicalProfile,
+      emotionalLogic: preset.emotionalLogic,
+      relationshipDynamic: preset.relationshipDynamic,
+      voiceProfile: preset.voiceProfile,
+      contrastNotes: preset.contrastNotes,
+      journalCategories: preset.journalCategories,
+      selectedKinks: preset.selectedKinks,
+    });
+
+    applySnapshot(snapshot, preset.summary);
+    setIsBatchMode(false);
+    setMessage(`Generating discovery character: ${preset.summary}`);
+    setIsWorking(true);
+    setBatchResults([]);
+    setBatchRatings({});
+    setGeneratedMarkdown("");
+    setDraftQualityReport(null);
+    setOriginalDraftQualityReport(null);
+    setDraftWasAutoRewritten(false);
+    setAnalyzedMarkdownSnapshot("");
+
+    void (async () => {
+      try {
+        const { ok, payload } = await requestSingleGeneration(snapshot);
+        if (!ok) throw new Error(payload.error || "Unable to generate discovery character.");
+        setGeneratedMarkdown(payload.markdown || "");
+        setDraftQualityReport(payload.qualityReport ?? null);
+        setOriginalDraftQualityReport(payload.originalQualityReport ?? null);
+        setDraftWasAutoRewritten(Boolean(payload.rewritten));
+        setAnalyzedMarkdownSnapshot(payload.markdown || "");
+        setMessage(`Discovery character ready: ${preset.summary}`);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Unable to generate discovery character.");
+      } finally {
+        setIsWorking(false);
+      }
+    })();
+  }
+
   function handleRemixBatchResult(index: number) {
     const source = batchResults[index];
     if (!source) {
@@ -619,6 +688,7 @@ export function useWorkbench(props: {
       mode: discoveryMode,
       preferences: discoveryPreferences,
       remixFingerprint: source.qualityReport.fingerprint,
+      lockedFields: getLockedFields(),
     });
     const snapshot = getBuilderSnapshot({
       brief: preset.brief,
@@ -933,6 +1003,7 @@ export function useWorkbench(props: {
     handleGenerate,
     handleBatchGenerate,
     handleSurpriseMe,
+    handleSurpriseMeSingle,
     handleSelectBatchResult,
     handleRemixBatchResult,
     handleRateBatchResult,

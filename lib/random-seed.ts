@@ -574,18 +574,54 @@ export function buildDiscoveryPreset(input: {
   mode: DiscoveryMode;
   preferences?: DiscoveryPreferenceStore;
   remixFingerprint?: CharacterFingerprint;
+  lockedFields?: {
+    physicalProfile?: PhysicalProfile;
+    selectedKinks?: KinkPreference[];
+    sexualProfile?: string;
+  };
 }): DiscoveryPreset {
   const templateIds = pickMany(MODE_TEMPLATES[input.mode], input.mode === "wild-card" ? 2 : Math.random() < 0.6 ? 1 : 2, "template", input.preferences);
   const backstoryId = weightedPick(MODE_BACKSTORIES[input.mode], "backstory", input.preferences);
   const scenarioId = weightedPick(MODE_SCENARIOS[input.mode], "scenario", input.preferences);
   const howTheyMet = weightedPick(MODE_HOW_THEY_MET[input.mode], "meet", input.preferences);
-  const physicalProfile = pickPhysicalProfile(input.mode, input.preferences);
+  const randomPhysical = pickPhysicalProfile(input.mode, input.preferences);
   const emotionalLogic = randomItem(EMOTIONAL_PRESETS[input.mode]);
   const relationshipDynamic = randomItem(RELATIONSHIP_PRESETS[input.mode]);
   const voiceProfile = randomItem(VOICE_PRESETS[input.mode]);
   const sexualPreset = randomItem(SEXUAL_PRESETS[input.mode]);
   const includeSexualProfile = input.mode !== "romanceable" || Math.random() < 0.75;
   const summary = buildSummary(input.mode, templateIds, backstoryId, scenarioId, howTheyMet);
+
+  // Merge locked physical profile fields — use locked values where set, random for the rest
+  const locked = input.lockedFields;
+  const lp = locked?.physicalProfile;
+  const physicalProfile: PhysicalProfile = lp
+    ? {
+        bodyType: lp.bodyType || randomPhysical.bodyType,
+        height: lp.height || randomPhysical.height,
+        ageRange: lp.ageRange || randomPhysical.ageRange,
+        ethnicity: lp.ethnicity || randomPhysical.ethnicity,
+        eyeColor: lp.eyeColor || randomPhysical.eyeColor,
+        distinguishingFeatures: lp.distinguishingFeatures.length > 0 ? lp.distinguishingFeatures : randomPhysical.distinguishingFeatures,
+        flirtationStyle: lp.flirtationStyle || randomPhysical.flirtationStyle,
+        availabilityStatus: lp.availabilityStatus || randomPhysical.availabilityStatus,
+      }
+    : randomPhysical;
+
+  // Use locked kinks if provided, otherwise use preset kinks
+  const hasLockedKinks = locked?.selectedKinks && locked.selectedKinks.length > 0;
+  const selectedKinks: KinkPreference[] = hasLockedKinks
+    ? locked!.selectedKinks!
+    : includeSexualProfile
+      ? sexualPreset.kinks.slice(0, input.mode === "high-heat" ? 3 : 2)
+      : [];
+
+  // Use locked sexual profile if provided
+  const sexualProfile = locked?.sexualProfile?.trim()
+    ? locked.sexualProfile
+    : includeSexualProfile || hasLockedKinks
+      ? sexualPreset.profile
+      : "";
 
   return {
     mode: input.mode,
@@ -604,7 +640,7 @@ export function buildDiscoveryPreset(input: {
       "She should be strong enough that the user can decide whether he likes her from the draft alone.",
       remixNotes(input.remixFingerprint),
     ].filter(Boolean).join(" "),
-    sexualProfile: includeSexualProfile ? sexualPreset.profile : "",
+    sexualProfile,
     selectedTemplates: templateIds,
     selectedBackstories: [backstoryId],
     selectedScenarios: [scenarioId],
@@ -617,7 +653,7 @@ export function buildDiscoveryPreset(input: {
       ? remixNotes(input.remixFingerprint)
       : "Make her feel genuinely distinct rather than like a polished version of a familiar archetype.",
     journalCategories: pickJournalCategories(input.mode),
-    selectedKinks: includeSexualProfile ? sexualPreset.kinks.slice(0, input.mode === "high-heat" ? 3 : 2) : [],
+    selectedKinks,
     batchTemperatures: MODE_BATCH_TEMPS[input.mode],
   };
 }
