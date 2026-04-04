@@ -49,6 +49,22 @@ export async function saveCharacterMarkdown(markdown: string) {
   return readCharacter(fileName);
 }
 
+export async function updateCharacterMarkdown(fileName: string, markdown: string) {
+  const trimmed = markdown.trim();
+  if (!trimmed) {
+    throw new Error("Markdown content cannot be empty.");
+  }
+
+  const safeName = path.basename(fileName);
+  const absolutePath = path.join(CHARACTERS_DIR, safeName);
+
+  // Verify the file exists before overwriting
+  await fs.stat(absolutePath);
+
+  await fs.writeFile(absolutePath, `${trimmed}\n`, "utf8");
+  return readCharacter(safeName);
+}
+
 export async function buildCharacterReferenceContext(selectedCharacters: string[], maxChars = 60000) {
   const uniqueNames = Array.from(new Set(selectedCharacters)).slice(0, 8);
   const characters = await Promise.all(uniqueNames.map((fileName) => readCharacter(fileName)));

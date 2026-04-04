@@ -107,6 +107,7 @@ export type WorkbenchActions = {
   handleBatchGenerate: () => void;
   handleSelectBatchResult: (index: number) => void;
   handleSaveCharacter: () => void;
+  handleUpdateCharacter: (fileName: string, markdown: string) => void;
   handleUpdateMetadata: (fileName: string, update: { tags?: string[]; favorite?: "toggle" }) => void;
 };
 
@@ -421,6 +422,33 @@ export function useWorkbench(props: {
     })();
   }
 
+  function handleUpdateCharacter(fileName: string, markdown: string) {
+    setMessage("Updating character...");
+    setIsWorking(true);
+    void (async () => {
+      try {
+        const response = await fetch("/api/characters", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName, markdown }),
+        });
+        const payload = (await response.json()) as {
+          character?: CharacterSummary;
+          characters?: CharacterSummary[];
+          message?: string;
+          error?: string;
+        };
+        if (!response.ok) throw new Error(payload.error || "Unable to update character.");
+        refreshFromPayload(payload);
+        if (payload.character) setActiveCharacter(payload.character.fileName);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Unable to update character.");
+      } finally {
+        setIsWorking(false);
+      }
+    })();
+  }
+
   function handleUpdateMetadata(fileName: string, update: { tags?: string[]; favorite?: "toggle" }) {
     void (async () => {
       try {
@@ -508,6 +536,7 @@ export function useWorkbench(props: {
     handleBatchGenerate,
     handleSelectBatchResult,
     handleSaveCharacter,
+    handleUpdateCharacter,
     handleUpdateMetadata,
   };
 

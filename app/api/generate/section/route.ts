@@ -11,10 +11,6 @@ export async function POST(request: Request) {
       throw new Error("Section key and label are required.");
     }
 
-    if (!body.brief?.trim()) {
-      throw new Error("Original brief is required for section regeneration.");
-    }
-
     if (!body.provider?.baseUrl?.trim() || !body.provider?.model?.trim() || !body.provider?.apiKey?.trim()) {
       throw new Error("Base URL, model, and API key are required.");
     }
@@ -23,7 +19,7 @@ export async function POST(request: Request) {
       sectionKey: body.sectionKey,
       sectionLabel: body.sectionLabel,
       currentContent: body.currentContent ?? "",
-      brief: body.brief,
+      brief: body.brief ?? "",
       notes: body.notes ?? "",
       fullCharacterContext: body.fullCharacterContext ?? "",
       selectedDocuments: body.selectedDocuments ?? [],

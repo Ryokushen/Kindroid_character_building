@@ -110,6 +110,7 @@ export type JournalCategories = {
   insecuritiesFears: boolean;
   conflictStyle: boolean;
   friendsSocialLife: boolean;
+  sexualHistory: boolean;
 };
 
 // --- Kink preferences ---
@@ -255,4 +256,5 @@ export const DEFAULT_JOURNAL_CATEGORIES: JournalCategories = {
   insecuritiesFears: false,
   conflictStyle: false,
   friendsSocialLife: false,
+  sexualHistory: true,
 };

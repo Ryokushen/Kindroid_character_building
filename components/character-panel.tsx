@@ -1,6 +1,6 @@
 "use client";
 
-import type { CharacterSummary } from "@/lib/types";
+import type { CharacterSummary, ProviderSettings } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,17 +8,22 @@ import { Separator } from "@/components/ui/separator";
 import { CharacterList } from "./character-list";
 import { CharacterPreview } from "./character-preview";
 import { KindroidReadyView } from "./kindroid-ready-view";
+import { CharacterEditor } from "./character-editor";
 
 export function CharacterPanel({
   characters,
   activeCharacter,
   activeCharacterRecord,
+  provider,
   onSetActive,
+  onUpdateCharacter,
 }: {
   characters: CharacterSummary[];
   activeCharacter: string;
   activeCharacterRecord: CharacterSummary | undefined;
+  provider: ProviderSettings;
   onSetActive: (fileName: string) => void;
+  onUpdateCharacter: (fileName: string, markdown: string) => void;
 }) {
   return (
     <Card className="border-border bg-card/60 backdrop-blur-md">
@@ -51,6 +56,9 @@ export function CharacterPanel({
               <TabsTrigger value="kindroid" className="text-xs">
                 Kindroid Transfer
               </TabsTrigger>
+              <TabsTrigger value="edit" className="text-xs">
+                Edit
+              </TabsTrigger>
               <TabsTrigger value="raw" className="text-xs">
                 Raw Markdown
               </TabsTrigger>
@@ -58,6 +66,14 @@ export function CharacterPanel({
 
             <TabsContent value="kindroid">
               <KindroidReadyView character={activeCharacterRecord} />
+            </TabsContent>
+
+            <TabsContent value="edit">
+              <CharacterEditor
+                character={activeCharacterRecord}
+                provider={provider}
+                onSave={(markdown) => onUpdateCharacter(activeCharacterRecord.fileName, markdown)}
+              />
             </TabsContent>
 
             <TabsContent value="raw">

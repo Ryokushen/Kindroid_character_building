@@ -22,6 +22,7 @@ const CATEGORIES: Array<{
   { key: "insecuritiesFears", label: "Insecurities & fears", description: "Body image, social anxiety, what keeps her up at night, deepest fears" },
   { key: "conflictStyle", label: "Conflict style", description: "How she fights, what she does after arguments, silent treatment vs. explosive" },
   { key: "friendsSocialLife", label: "Friends & social life", description: "Best friend dynamics, social habits, party behavior, who she calls when upset" },
+  { key: "sexualHistory", label: "Sexual history & kinks", description: "Past experiences, what shaped her preferences, sexual confidence level, discovery moments" },
 ];
 
 export function JournalCategoriesSelector({

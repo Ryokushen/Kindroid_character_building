@@ -234,7 +234,7 @@ Entry: Factual 3rd-person paragraph.
 
 ## Sexual Behavior Journals
 
-If a sexual profile is provided, generate 3-5 dedicated journal entries covering the character's sexual behavior. CRITICAL: Each character must have a UNIQUE kink profile shaped by her personality. Not every woman likes the same things.
+If a sexual profile OR kink preferences are provided, generate 3-5 dedicated journal entries covering the character's sexual behavior. CRITICAL: Each character must have a UNIQUE kink profile shaped by her personality. Not every woman likes the same things.
 
 **Rules for sexual journal variety:**
 - Select a SUBSET of the user's kink preferences that fit THIS character's personality — do NOT assign all kinks to every character
@@ -322,8 +322,8 @@ If you find yourself writing the same sentence or concept in two sections, DELET
 ## GENERAL RULES
 - Be concrete, avoid generic phrasing, infer reasonable missing details from the brief
 - Every personality trait must have a behavioral expression
-- If no sexual profile is provided, do not generate sexual behavior journals
-- If a sexual profile IS provided, generate dedicated sexual behavior journal entries as specified above
+- If NEITHER a sexual profile NOR kink preferences are provided, do not generate sexual behavior journals
+- If a sexual profile OR kink preferences ARE provided, you MUST generate 3-5 dedicated sexual behavior journal entries — this is not optional
 - Write backstory, RD, key memories, and journals in 3rd person
 - Include character counts in parentheses after EVERY code-block section
 - Avatar Prompt must describe FACE ONLY — no body, no clothing
@@ -536,6 +536,7 @@ export function buildUserPrompt(input: {
     if (jc.insecuritiesFears) categories.push("Insecurities and fears (body image, social anxiety, deepest fears)");
     if (jc.conflictStyle) categories.push("Conflict style (how she fights, what she does after arguments, forgiveness patterns)");
     if (jc.friendsSocialLife) categories.push("Friends and social life (best friend dynamics, social habits, who she calls when upset)");
+    if (jc.sexualHistory) categories.push("Sexual history and kinks (past experiences that shaped her preferences, what she's tried, what she's curious about, sexual confidence level)");
     if (categories.length > 0) {
       parts.push(
         "",

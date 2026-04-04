@@ -46,7 +46,9 @@ export function Workbench({
           characters={state.characters}
           activeCharacter={state.activeCharacter}
           activeCharacterRecord={state.activeCharacterRecord}
+          provider={state.provider}
           onSetActive={(f) => actions.setActiveCharacter(f)}
+          onUpdateCharacter={actions.handleUpdateCharacter}
         />
       </div>
     </main>
