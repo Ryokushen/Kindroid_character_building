@@ -8,7 +8,7 @@ const SECTION_PATTERNS: Array<{ key: CharacterSectionKey; label: string; pattern
   { key: "response_directive", label: "Response Directive (RD)", pattern: /response\s*directive|^\s*rd\b/i },
   { key: "example_message", label: "Example Message (EM)", pattern: /example\s*message|^\s*em\b/i },
   { key: "key_memories", label: "Key Memories", pattern: /key\s*memor/i },
-  { key: "journal_entries", label: "Journal Entries", pattern: /journal\s*entr/i },
+  { key: "journal_entries", label: "Journal Entries", pattern: /journal\s*entr|sexual\s*behav|sexual\s*journal|kinks?\s*journal/i },
   { key: "greeting_options", label: "Greeting Options", pattern: /greeting/i },
   { key: "selfie_prompts", label: "Selfie / Image Prompts", pattern: /selfie|image\s*prompt/i },
 ];
