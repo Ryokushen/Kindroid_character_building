@@ -5,20 +5,31 @@ import type { GenerationPayload } from "@/lib/types";
 import { DEFAULT_EMOTIONAL_LOGIC, DEFAULT_JOURNAL_CATEGORIES, DEFAULT_MC_PROFILE, DEFAULT_PHYSICAL_PROFILE, DEFAULT_RELATIONSHIP_DYNAMIC, DEFAULT_VOICE_PROFILE } from "@/lib/types";
 
 export async function POST(request: Request) {
+  let body: Partial<GenerationPayload>;
+
   try {
-    const body = (await request.json()) as Partial<GenerationPayload>;
+    body = (await request.json()) as Partial<GenerationPayload>;
+  } catch {
+    return NextResponse.json({ error: "Failed to parse request body." }, { status: 400 });
+  }
 
-    if (!body.brief?.trim()) {
-      return NextResponse.json({ error: "A character brief is required." }, { status: 400 });
-    }
+  if (!body.brief?.trim()) {
+    return NextResponse.json({ error: "A character brief is required." }, { status: 400 });
+  }
 
-    if (!body.provider?.baseUrl?.trim() || !body.provider?.model?.trim() || !body.provider?.apiKey?.trim()) {
-      return NextResponse.json(
-        { error: `Provider config missing. baseUrl: ${!!body.provider?.baseUrl}, model: ${!!body.provider?.model}, apiKey: ${!!body.provider?.apiKey}` },
-        { status: 400 },
-      );
-    }
+  if (!body.provider?.baseUrl?.trim()) {
+    return NextResponse.json({ error: "Base URL is missing. Check provider settings." }, { status: 400 });
+  }
 
+  if (!body.provider?.model?.trim()) {
+    return NextResponse.json({ error: "Model is missing. Check provider settings." }, { status: 400 });
+  }
+
+  if (!body.provider?.apiKey?.trim()) {
+    return NextResponse.json({ error: "API key is missing. Check provider settings." }, { status: 400 });
+  }
+
+  try {
     const markdown = await generateCharacterDraft({
       brief: body.brief,
       notes: body.notes ?? "",
@@ -49,10 +60,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ markdown });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to generate character draft.";
-    console.error("[generate] Error:", message);
-    return NextResponse.json(
-      { error: message },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
