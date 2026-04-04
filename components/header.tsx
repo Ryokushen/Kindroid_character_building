@@ -27,7 +27,14 @@ export function Header({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card/60 px-4 py-3 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <a
+            href="/characters"
+            className="rounded-lg border border-border bg-card/60 px-4 py-3 text-sm font-medium text-muted-foreground backdrop-blur-md transition-colors hover:bg-muted/50 hover:text-foreground"
+          >
+            Character Library
+          </a>
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-card/60 px-4 py-3 backdrop-blur-md">
           <span
             className={cn(
               "h-2.5 w-2.5 shrink-0 rounded-full",
@@ -37,6 +44,7 @@ export function Header({
             )}
           />
           <p className="text-sm text-muted-foreground">{message}</p>
+          </div>
         </div>
       </div>
     </header>

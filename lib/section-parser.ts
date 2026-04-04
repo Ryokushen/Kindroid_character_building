@@ -184,12 +184,50 @@ export function parseJournalEntries(rawContent: string): JournalEntry[] {
     const title = titleMatch[1].trim();
     const bodyAfterTitle = part.slice(part.indexOf("\n") + 1);
     const { content } = extractCodeBlockContent(bodyAfterTitle);
-    if (content) {
-      journals.push({ title, content });
-    }
+    if (!content) continue;
+
+    // Split into keywords line and entry text
+    const { keywords, entryText } = splitJournalContent(content);
+
+    journals.push({ title, content, keywords, entryText });
   }
 
   return journals;
+}
+
+/**
+ * Split journal content into keywords and entry text.
+ * Handles formats like:
+ *   KEYWORDS: "mom" "family" "south memphis"
+ *   Entry: Val's mother Rosa lives off Lamar Ave...
+ */
+function splitJournalContent(content: string): { keywords: string; entryText: string } {
+  const lines = content.split("\n");
+  let keywords = "";
+  let entryStartIndex = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Match KEYWORDS line (with or without colon)
+    if (/^KEYWORDS?\s*:/i.test(line)) {
+      keywords = line.replace(/^KEYWORDS?\s*:\s*/i, "").trim();
+      entryStartIndex = i + 1;
+      continue;
+    }
+
+    // Match "Entry:" prefix on a line
+    if (/^Entry\s*:/i.test(line)) {
+      const entryContent = line.replace(/^Entry\s*:\s*/i, "").trim();
+      const remainingLines = lines.slice(i + 1).map((l) => l.trim()).join("\n").trim();
+      const fullEntry = remainingLines ? `${entryContent}\n${remainingLines}` : entryContent;
+      return { keywords, entryText: fullEntry };
+    }
+  }
+
+  // No explicit "Entry:" prefix found — everything after keywords is the entry
+  const entryText = lines.slice(entryStartIndex).join("\n").trim();
+  return { keywords, entryText };
 }
 
 /**

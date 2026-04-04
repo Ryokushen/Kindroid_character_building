@@ -185,6 +185,10 @@ export type CharacterSectionKey =
 export type JournalEntry = {
   title: string;
   content: string;
+  /** Raw keywords line, e.g. "mom" "family" "south memphis" */
+  keywords: string;
+  /** Just the entry text (after "Entry:" prefix), used for character counting */
+  entryText: string;
 };
 
 export type GreetingEntry = {

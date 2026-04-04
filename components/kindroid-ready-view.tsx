@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { CharacterSummary } from "@/lib/types";
+import type { CharacterSummary, JournalEntry } from "@/lib/types";
 import { KINDROID_LIMITS } from "@/lib/types";
 import { parseCharacterSections, parseJournalEntries, parseGreetingEntries } from "@/lib/section-parser";
 import { Button } from "@/components/ui/button";
@@ -93,6 +93,115 @@ function CopyField({
       <div className="px-4 py-3">
         <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-muted-foreground select-all">
           {content}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+function JournalCopyField({
+  journal,
+}: {
+  journal: JournalEntry;
+}) {
+  const [copiedKeywords, setCopiedKeywords] = useState(false);
+  const [copiedEntry, setCopiedEntry] = useState(false);
+
+  const entryCharCount = journal.entryText.length;
+  const charLimit = KINDROID_LIMITS.journal_entry ?? 500;
+  const isOverLimit = entryCharCount > charLimit;
+  const isNearLimit = entryCharCount > charLimit * 0.9;
+
+  async function copyText(text: string, setter: (v: boolean) => void) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+    setter(true);
+    setTimeout(() => setter(false), 2000);
+  }
+
+  return (
+    <div className={cn(
+      "rounded-lg border bg-muted/20 overflow-hidden",
+      isOverLimit ? "border-red-500/40" : "border-border",
+    )}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-muted/30">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-foreground">{journal.title}</span>
+          <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-accent/10 text-accent">
+            Journal
+          </Badge>
+        </div>
+        <span
+          className={cn(
+            "font-mono text-xs",
+            isOverLimit
+              ? "text-red-400 font-bold"
+              : isNearLimit
+                ? "text-yellow-400"
+                : "text-muted-foreground",
+          )}
+        >
+          {entryCharCount} / {charLimit}
+        </span>
+      </div>
+
+      {/* Keywords section */}
+      {journal.keywords && (
+        <div className="px-4 py-2 border-b border-border/50 bg-muted/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Keywords</span>
+              <Badge variant="secondary" className="h-4 px-1 text-[9px] bg-muted/50 text-muted-foreground">
+                not counted
+              </Badge>
+            </div>
+            <Button
+              size="sm"
+              variant={copiedKeywords ? "default" : "ghost"}
+              className={cn(
+                "h-6 px-2 text-[10px]",
+                copiedKeywords
+                  ? "bg-green-600/20 text-green-400 hover:bg-green-600/20"
+                  : "text-muted-foreground hover:text-primary",
+              )}
+              onClick={() => copyText(journal.keywords, setCopiedKeywords)}
+            >
+              {copiedKeywords ? "Copied!" : "Copy keywords"}
+            </Button>
+          </div>
+          <p className="mt-1 font-mono text-xs text-accent/80 select-all">{journal.keywords}</p>
+        </div>
+      )}
+
+      {/* Entry text section */}
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Entry text</span>
+          <Button
+            size="sm"
+            variant={copiedEntry ? "default" : "ghost"}
+            className={cn(
+              "h-6 px-2 text-[10px]",
+              copiedEntry
+                ? "bg-green-600/20 text-green-400 hover:bg-green-600/20"
+                : "text-primary hover:bg-primary/10",
+            )}
+            onClick={() => copyText(journal.entryText, setCopiedEntry)}
+          >
+            {copiedEntry ? "Copied!" : "Copy entry"}
+          </Button>
+        </div>
+        <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-muted-foreground select-all">
+          {journal.entryText}
         </pre>
       </div>
     </div>
@@ -218,13 +327,7 @@ export function KindroidReadyView({
             </p>
 
             {journals.map((journal, i) => (
-              <CopyField
-                key={i}
-                label={journal.title}
-                kindroidLabel="Journal"
-                content={journal.content}
-                charLimit={KINDROID_LIMITS.journal_entry}
-              />
+              <JournalCopyField key={i} journal={journal} />
             ))}
           </>
         )}
