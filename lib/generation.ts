@@ -234,27 +234,42 @@ Entry: Factual 3rd-person paragraph.
 
 ## Sexual Behavior Journals
 
-If a sexual profile is provided, generate 2-4 dedicated journal entries covering the character's sexual behavior, dynamics, and preferences. Each journal should focus on a specific aspect:
+If a sexual profile is provided, generate 3-5 dedicated journal entries covering the character's sexual behavior. CRITICAL: Each character must have a UNIQUE kink profile shaped by her personality. Not every woman likes the same things.
 
-### Journal N — Sexual Dynamic / Drive
+**Rules for sexual journal variety:**
+- Select a SUBSET of the user's kink preferences that fit THIS character's personality — do NOT assign all kinks to every character
+- A shy wallflower might only be into vanilla + dirty talk + bondage, while a bratty party girl might be into rough + CNC + public sex
+- The character's emotional logic should drive her sexual behavior: an abandonment-wound character clings during sex; a control-freak character needs to surrender; a people-pleaser character gives excessively
+- Each journal entry must describe SPECIFIC behaviors, not generic labels
+- Keywords should be words users would naturally type during intimate conversation
+
+**Journal structure — generate 3-5 of these depending on the character's complexity:**
+
+### Journal N — Sexual Drive & Initiation
 \`\`\`
 KEYWORDS: "kiss" "bed" "tonight" "want you" "come here"
-Entry: How they initiate intimacy, their sex drive, dominant/submissive dynamics, how trust affects their sexual behavior. 3rd person, factual, behavioral.
+Entry: How she initiates (or doesn't), her drive level, what triggers desire, how trust affects her willingness. 3rd person, behavioral.
 \`\`\`
 
-### Journal N+1 — Kinks / Preferences
+### Journal N+1 — Primary Kink (her strongest preference)
 \`\`\`
-KEYWORDS: "rough" "talk dirty" "tease" "fantasy"
-Entry: Specific sexual preferences, kinks, what turns them on, dirty talk style, physical preferences. 3rd person, behavioral.
-\`\`\`
-
-### Journal N+2 — Physical Intimacy Style
-\`\`\`
-KEYWORDS: "touch" "close" "hands" "cuddle" "skin"
-Entry: How they express physical affection and intimacy, touch patterns, what makes them feel desired. 3rd person.
+KEYWORDS: (specific to the kink — e.g., "rough" "harder" "hold me down" for rough)
+Entry: Detailed behavioral description of how this kink manifests for HER specifically. Not generic — tied to her personality. 3rd person.
 \`\`\`
 
-Choose keywords that users would naturally type during intimate conversations. Keep each entry under 500 characters. Be specific and behavioral — describe what they DO, not vague labels.
+### Journal N+2 — Secondary Kink or Physical Intimacy
+\`\`\`
+KEYWORDS: (specific to the behavior)
+Entry: Another aspect of her sexuality that contrasts with or complements the primary kink. 3rd person.
+\`\`\`
+
+### Journal N+3 — Touch & Aftercare (optional but recommended)
+\`\`\`
+KEYWORDS: "touch" "close" "hold" "cuddle" "skin"
+Entry: How she handles physical intimacy outside of sex — touch patterns, aftercare needs, what makes her feel desired vs. used. 3rd person.
+\`\`\`
+
+Keep each entry under 500 characters. Be specific and behavioral — describe what she DOES, not vague labels.
 
 ## Greeting Options
 
@@ -332,6 +347,7 @@ export function buildUserPrompt(input: {
   voiceProfile?: import("@/lib/types").VoiceProfile;
   contrastNotes?: string;
   journalCategories?: import("@/lib/types").JournalCategories;
+  selectedKinks?: import("@/lib/types").KinkPreference[];
   mcProfile?: import("@/lib/types").MCProfile;
 }) {
   const parts: string[] = [];
@@ -442,11 +458,37 @@ export function buildUserPrompt(input: {
   }
 
   // Sexual profile
-  if (input.sexualProfile?.trim()) {
+  if (input.sexualProfile?.trim() || (input.selectedKinks && input.selectedKinks.length > 0)) {
+    const sexParts: string[] = [];
+    if (input.sexualProfile?.trim()) {
+      sexParts.push(input.sexualProfile.trim());
+    }
+    if (input.selectedKinks && input.selectedKinks.length > 0) {
+      const kinkLabels: Record<string, string> = {
+        "oral": "Oral (giving and receiving)",
+        "anal": "Anal",
+        "rough": "Rough sex (grabbing, pinning, manhandling)",
+        "cnc": "Consensual non-consent (CNC)",
+        "voyeurism-almost-caught": "Almost being caught / voyeurism",
+        "public-sex": "Public sex / risky locations",
+        "swallowing": "Swallowing",
+        "facials": "Facials",
+        "bondage-tied-up": "Bondage / being tied up",
+        "dirty-talk": "Dirty talk",
+        "water-sports": "Water sports",
+        "age-play": "Age play",
+        "race-play": "Race play",
+        "roleplay": "Roleplay / fantasy scenarios",
+      };
+      const labels = input.selectedKinks.map((k) => kinkLabels[k] ?? k.replace(/-/g, " "));
+      sexParts.push(
+        `Available kink menu (select a CHARACTER-APPROPRIATE SUBSET — do NOT give every kink to every character): ${labels.join(", ")}`,
+      );
+    }
     parts.push(
       "",
-      "Sexual profile (generate dedicated sexual behavior journal entries for this):",
-      input.sexualProfile.trim(),
+      "Sexual profile (generate dedicated sexual behavior journal entries):",
+      sexParts.join("\n"),
     );
   }
 
@@ -648,6 +690,7 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
       voiceProfile: payload.voiceProfile,
       contrastNotes: payload.contrastNotes,
       journalCategories: payload.journalCategories,
+      selectedKinks: payload.selectedKinks,
       mcProfile: payload.mcProfile,
     }),
   );

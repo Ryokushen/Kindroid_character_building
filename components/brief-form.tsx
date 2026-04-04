@@ -19,6 +19,7 @@ import { JournalCategoriesSelector } from "./journal-categories";
 import { MCProfileForm } from "./mc-profile-form";
 import { PhysicalAppearanceForm, FlirtationStylePills, AvailabilityStatusPills } from "./physical-profile-form";
 import { HowTheyMetSelector } from "./how-they-met-selector";
+import { KinkSelector } from "./kink-selector";
 
 const TABS = [
   { id: "concept", label: "Concept" },
@@ -66,6 +67,7 @@ function countScenarioActive(state: WorkbenchState): number {
 function countOutputActive(state: WorkbenchState): number {
   let n = 0;
   if (state.sexualProfile.trim()) n++;
+  if (state.selectedKinks.length > 0) n++;
   const jc = state.journalCategories;
   const jcCount = Object.values(jc).filter(Boolean).length;
   if (jcCount > 0) n++;
@@ -283,6 +285,11 @@ export function BriefForm({
               />
             </CollapsibleContent>
           </Collapsible>
+
+          <KinkSelector
+            selectedKinks={state.selectedKinks}
+            setSelectedKinks={actions.setSelectedKinks}
+          />
 
           <JournalCategoriesSelector
             journalCategories={state.journalCategories}

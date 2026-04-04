@@ -57,6 +57,7 @@ export function DraftBuilderPanel({
           voiceProfile: state.voiceProfile,
           contrastNotes: state.contrastNotes,
           journalCategories: state.journalCategories,
+          selectedKinks: state.selectedKinks,
           mcProfile: state.mcProfile,
           provider: state.provider,
         }),

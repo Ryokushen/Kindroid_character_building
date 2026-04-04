@@ -41,6 +41,7 @@ export async function POST(request: Request) {
           voiceProfile: body.voiceProfile ?? DEFAULT_VOICE_PROFILE,
           contrastNotes: body.contrastNotes ?? "",
           journalCategories: body.journalCategories ?? DEFAULT_JOURNAL_CATEGORIES,
+          selectedKinks: body.selectedKinks ?? [],
           mcProfile: body.mcProfile ?? DEFAULT_MC_PROFILE,
           provider: {
             providerType: body.provider!.providerType ?? "openai",

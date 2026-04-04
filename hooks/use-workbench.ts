@@ -6,6 +6,7 @@ import type {
   CharacterSummary,
   EmotionalLogic,
   JournalCategories,
+  KinkPreference,
   LibraryDocument,
   MCProfile,
   PhysicalProfile,
@@ -70,6 +71,7 @@ export type WorkbenchState = {
   voiceProfile: VoiceProfile;
   contrastNotes: string;
   journalCategories: JournalCategories;
+  selectedKinks: KinkPreference[];
   mcProfile: MCProfile;
 };
 
@@ -95,6 +97,7 @@ export type WorkbenchActions = {
   setVoiceProfile: Dispatch<SetStateAction<VoiceProfile>>;
   setContrastNotes: Dispatch<SetStateAction<string>>;
   setJournalCategories: Dispatch<SetStateAction<JournalCategories>>;
+  setSelectedKinks: Dispatch<SetStateAction<KinkPreference[]>>;
   setMCProfile: Dispatch<SetStateAction<MCProfile>>;
   toggleDocumentSelection: (fileName: string) => void;
   toggleCharacterSelection: (fileName: string) => void;
@@ -150,6 +153,7 @@ export function useWorkbench(props: {
   const [voiceProfile, setVoiceProfile] = useState<VoiceProfile>(DEFAULT_VOICE_PROFILE);
   const [contrastNotes, setContrastNotes] = useState("");
   const [journalCategories, setJournalCategories] = useState<JournalCategories>(DEFAULT_JOURNAL_CATEGORIES);
+  const [selectedKinks, setSelectedKinks] = useState<KinkPreference[]>([]);
   const [mcProfile, setMCProfile] = useState<MCProfile>(DEFAULT_MC_PROFILE);
 
   // Load saved provider settings + per-provider API keys
@@ -317,6 +321,7 @@ export function useWorkbench(props: {
             voiceProfile,
             contrastNotes,
             journalCategories,
+            selectedKinks,
             mcProfile,
             provider,
           }),
@@ -359,6 +364,7 @@ export function useWorkbench(props: {
             voiceProfile,
             contrastNotes,
             journalCategories,
+            selectedKinks,
             mcProfile,
             provider,
             temperatures: batchTemperatures,
@@ -466,6 +472,7 @@ export function useWorkbench(props: {
     voiceProfile,
     contrastNotes,
     journalCategories,
+    selectedKinks,
     mcProfile,
   };
 
@@ -491,6 +498,7 @@ export function useWorkbench(props: {
     setVoiceProfile,
     setContrastNotes,
     setJournalCategories,
+    setSelectedKinks,
     setMCProfile,
     toggleDocumentSelection: (fileName) => toggle(fileName, selectedDocuments, setSelectedDocuments),
     toggleCharacterSelection: (fileName) => toggle(fileName, selectedCharacters, setSelectedCharacters),

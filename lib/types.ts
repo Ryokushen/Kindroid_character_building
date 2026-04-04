@@ -112,6 +112,13 @@ export type JournalCategories = {
   friendsSocialLife: boolean;
 };
 
+// --- Kink preferences ---
+
+export type KinkPreference =
+  | "oral" | "anal" | "rough" | "cnc" | "voyeurism-almost-caught"
+  | "public-sex" | "swallowing" | "facials" | "bondage-tied-up"
+  | "dirty-talk" | "water-sports" | "age-play" | "race-play" | "roleplay";
+
 // --- Male MC Profile ---
 
 export type MCProfile = {
@@ -154,6 +161,7 @@ export type GenerationPayload = {
   voiceProfile: VoiceProfile;
   contrastNotes: string;
   journalCategories: JournalCategories;
+  selectedKinks: KinkPreference[];
   mcProfile: MCProfile;
   provider: ProviderSettings;
 };
