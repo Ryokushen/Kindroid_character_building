@@ -29,8 +29,12 @@ export async function POST(request: Request) {
       provider: Partial<ProviderSettings>;
     };
 
-    if (!body.provider?.baseUrl?.trim() || !body.provider?.model?.trim() || !body.provider?.apiKey?.trim()) {
-      return NextResponse.json({ error: "Provider settings required for concept generation." }, { status: 400 });
+    const prov = body.provider;
+    if (!prov?.baseUrl?.trim() || !prov?.model?.trim() || !prov?.apiKey?.trim()) {
+      return NextResponse.json(
+        { error: `Provider config missing for concept. baseUrl: ${!!prov?.baseUrl}, model: ${!!prov?.model}, apiKey: ${!!prov?.apiKey}` },
+        { status: 400 },
+      );
     }
 
     const userPrompt = [
@@ -46,21 +50,21 @@ export async function POST(request: Request) {
       "Generate the character concept. 3-4 sentences, vivid and specific.",
     ].filter(Boolean).join("\n");
 
+    const temperature = prov.providerType === "anthropic" ? 1.0 : 1.1;
+
     const concept = await callModel(
-      body.provider.providerType ?? "openai",
-      body.provider.baseUrl!,
-      body.provider.apiKey!,
-      body.provider.model!,
-      1.1,
+      prov.providerType ?? "openai",
+      prov.baseUrl!,
+      prov.apiKey!,
+      prov.model!,
+      temperature,
       CONCEPT_SYSTEM_PROMPT,
       userPrompt,
     );
 
     return NextResponse.json({ concept });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to generate concept." },
-      { status: 400 },
-    );
+    const message = error instanceof Error ? error.message : "Unable to generate concept.";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
