@@ -1,8 +1,20 @@
 import { NextResponse } from "next/server";
 
-import { generateCharacterDraft } from "@/lib/generation";
-import type { GenerationPayload } from "@/lib/types";
-import { DEFAULT_EMOTIONAL_LOGIC, DEFAULT_JOURNAL_CATEGORIES, DEFAULT_MC_PROFILE, DEFAULT_PHYSICAL_PROFILE, DEFAULT_RELATIONSHIP_DYNAMIC, DEFAULT_VOICE_PROFILE } from "@/lib/types";
+import { buildCharacterReferenceContext, listCharacters } from "@/lib/characters";
+import { buildReferenceContrastLines } from "@/lib/character-fingerprint";
+import { buildSystemPrompt, buildUserPrompt } from "@/lib/generation";
+import { buildDocumentContext } from "@/lib/library";
+import { callModel } from "@/lib/model-client";
+import { analyzeDraftQuality } from "@/lib/quality-checks";
+import type { BatchGenerationResult, DraftAnalysisPayload, GenerationPayload } from "@/lib/types";
+import {
+  DEFAULT_EMOTIONAL_LOGIC,
+  DEFAULT_JOURNAL_CATEGORIES,
+  DEFAULT_MC_PROFILE,
+  DEFAULT_PHYSICAL_PROFILE,
+  DEFAULT_RELATIONSHIP_DYNAMIC,
+  DEFAULT_VOICE_PROFILE,
+} from "@/lib/types";
 
 type BatchBody = Partial<GenerationPayload> & { temperatures?: number[] };
 
@@ -23,37 +35,103 @@ export async function POST(request: Request) {
       throw new Error("Provide 2-4 temperature values.");
     }
 
+    const normalizedPayload: GenerationPayload = {
+      brief: body.brief,
+      notes: body.notes ?? "",
+      sexualProfile: body.sexualProfile ?? "",
+      selectedDocuments: body.selectedDocuments ?? [],
+      selectedCharacters: body.selectedCharacters ?? [],
+      selectedTemplates: body.selectedTemplates ?? [],
+      selectedBackstories: body.selectedBackstories ?? [],
+      selectedScenarios: body.selectedScenarios ?? [],
+      howTheyMet: body.howTheyMet ?? "",
+      physicalProfile: body.physicalProfile ?? DEFAULT_PHYSICAL_PROFILE,
+      emotionalLogic: body.emotionalLogic ?? DEFAULT_EMOTIONAL_LOGIC,
+      relationshipDynamic: body.relationshipDynamic ?? DEFAULT_RELATIONSHIP_DYNAMIC,
+      voiceProfile: body.voiceProfile ?? DEFAULT_VOICE_PROFILE,
+      contrastNotes: body.contrastNotes ?? "",
+      journalCategories: body.journalCategories ?? DEFAULT_JOURNAL_CATEGORIES,
+      selectedKinks: body.selectedKinks ?? [],
+      mcProfile: body.mcProfile ?? DEFAULT_MC_PROFILE,
+      provider: {
+        providerType: body.provider.providerType ?? "openai",
+        providerLabel: body.provider.providerLabel ?? "Custom",
+        baseUrl: body.provider.baseUrl,
+        model: body.provider.model,
+        apiKey: body.provider.apiKey,
+        temperature: Number(body.provider.temperature ?? 0.8),
+      },
+    };
+
+    const [activeCharacters, documentContext, characterContext] = await Promise.all([
+      listCharacters(),
+      buildDocumentContext(normalizedPayload.selectedDocuments),
+      buildCharacterReferenceContext(normalizedPayload.selectedCharacters),
+    ]);
+    const referenceCharacters = activeCharacters.filter((character) =>
+      normalizedPayload.selectedCharacters.includes(character.fileName),
+    );
+    const contrastRequirements = buildReferenceContrastLines(referenceCharacters);
+
     const results = await Promise.all(
-      temperatures.map(async (temp) => {
-        const markdown = await generateCharacterDraft({
-          brief: body.brief!,
-          notes: body.notes ?? "",
-          sexualProfile: body.sexualProfile ?? "",
-          selectedDocuments: body.selectedDocuments ?? [],
-          selectedCharacters: body.selectedCharacters ?? [],
-          selectedTemplates: body.selectedTemplates ?? [],
-          selectedBackstories: body.selectedBackstories ?? [],
-          selectedScenarios: body.selectedScenarios ?? [],
-          howTheyMet: body.howTheyMet ?? "",
-          physicalProfile: body.physicalProfile ?? DEFAULT_PHYSICAL_PROFILE,
-          emotionalLogic: body.emotionalLogic ?? DEFAULT_EMOTIONAL_LOGIC,
-          relationshipDynamic: body.relationshipDynamic ?? DEFAULT_RELATIONSHIP_DYNAMIC,
-          voiceProfile: body.voiceProfile ?? DEFAULT_VOICE_PROFILE,
-          contrastNotes: body.contrastNotes ?? "",
-          journalCategories: body.journalCategories ?? DEFAULT_JOURNAL_CATEGORIES,
-          selectedKinks: body.selectedKinks ?? [],
-          mcProfile: body.mcProfile ?? DEFAULT_MC_PROFILE,
-          provider: {
-            providerType: body.provider!.providerType ?? "openai",
-            providerLabel: body.provider!.providerLabel ?? "Custom",
-            baseUrl: body.provider!.baseUrl!,
-            model: body.provider!.model!,
-            apiKey: body.provider!.apiKey!,
-            temperature: temp,
-          },
+      temperatures.map(async (temp): Promise<BatchGenerationResult> => {
+        const markdown = await callModel(
+          normalizedPayload.provider.providerType,
+          normalizedPayload.provider.baseUrl,
+          normalizedPayload.provider.apiKey,
+          normalizedPayload.provider.model,
+          temp,
+          buildSystemPrompt(),
+          buildUserPrompt({
+            brief: normalizedPayload.brief,
+            notes: normalizedPayload.notes,
+            sexualProfile: normalizedPayload.sexualProfile,
+            documentContext,
+            characterContext,
+            templateAdditions: normalizedPayload.selectedTemplates,
+            backstoryAdditions: normalizedPayload.selectedBackstories,
+            scenarioAdditions: normalizedPayload.selectedScenarios,
+            howTheyMet: normalizedPayload.howTheyMet,
+            physicalProfile: normalizedPayload.physicalProfile,
+            emotionalLogic: normalizedPayload.emotionalLogic,
+            relationshipDynamic: normalizedPayload.relationshipDynamic,
+            voiceProfile: normalizedPayload.voiceProfile,
+            contrastNotes: normalizedPayload.contrastNotes,
+            journalCategories: normalizedPayload.journalCategories,
+            selectedKinks: normalizedPayload.selectedKinks,
+            mcProfile: normalizedPayload.mcProfile,
+            contrastRequirements,
+          }),
+        );
+
+        const analysisInput: DraftAnalysisPayload = {
+          markdown,
+          brief: normalizedPayload.brief,
+          notes: normalizedPayload.notes,
+          sexualProfile: normalizedPayload.sexualProfile,
+          selectedDocuments: normalizedPayload.selectedDocuments,
+          selectedCharacters: normalizedPayload.selectedCharacters,
+          selectedTemplates: normalizedPayload.selectedTemplates,
+          selectedBackstories: normalizedPayload.selectedBackstories,
+          selectedScenarios: normalizedPayload.selectedScenarios,
+          howTheyMet: normalizedPayload.howTheyMet,
+          physicalProfile: normalizedPayload.physicalProfile,
+          emotionalLogic: normalizedPayload.emotionalLogic,
+          relationshipDynamic: normalizedPayload.relationshipDynamic,
+          voiceProfile: normalizedPayload.voiceProfile,
+          contrastNotes: normalizedPayload.contrastNotes,
+          journalCategories: normalizedPayload.journalCategories,
+          selectedKinks: normalizedPayload.selectedKinks,
+          mcProfile: normalizedPayload.mcProfile,
+        };
+        const qualityReport = analyzeDraftQuality({
+          markdown,
+          activeCharacters,
+          referenceCharacters,
+          analysisInput,
         });
 
-        return { temperature: temp, markdown };
+        return { temperature: temp, markdown, qualityReport };
       }),
     );
 

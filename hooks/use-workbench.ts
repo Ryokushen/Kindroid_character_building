@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type {
+  BatchGenerationResult,
   CharacterSummary,
+  DraftQualityReport,
   EmotionalLogic,
   JournalCategories,
   KinkPreference,
@@ -49,6 +51,10 @@ export type WorkbenchState = {
   brief: string;
   notes: string;
   generatedMarkdown: string;
+  draftQualityReport: DraftQualityReport | null;
+  originalDraftQualityReport: DraftQualityReport | null;
+  draftWasAutoRewritten: boolean;
+  qualityReportIsStale: boolean;
   message: string;
   isWorking: boolean;
   activeDocumentRecord: LibraryDocument | undefined;
@@ -56,7 +62,7 @@ export type WorkbenchState = {
   // Batch generation
   isBatchMode: boolean;
   batchTemperatures: number[];
-  batchResults: Array<{ temperature: number; markdown: string }>;
+  batchResults: BatchGenerationResult[];
   // Templates
   selectedTemplates: string[];
   // Sexual profile
@@ -107,6 +113,7 @@ export type WorkbenchActions = {
   handleBatchGenerate: () => void;
   handleSelectBatchResult: (index: number) => void;
   handleSaveCharacter: () => void;
+  handleAnalyzeGeneratedDraft: () => Promise<DraftQualityReport | null>;
   handleUpdateCharacter: (fileName: string, markdown: string) => void;
   handleDeleteCharacter: (fileName: string) => void;
   handleUpdateMetadata: (fileName: string, update: { tags?: string[]; favorite?: "toggle" }) => void;
@@ -139,11 +146,15 @@ export function useWorkbench(props: {
   const [brief, setBrief] = useState("");
   const [notes, setNotes] = useState("");
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
+  const [draftQualityReport, setDraftQualityReport] = useState<DraftQualityReport | null>(null);
+  const [originalDraftQualityReport, setOriginalDraftQualityReport] = useState<DraftQualityReport | null>(null);
+  const [draftWasAutoRewritten, setDraftWasAutoRewritten] = useState(false);
+  const [analyzedMarkdownSnapshot, setAnalyzedMarkdownSnapshot] = useState("");
   const [message, setMessage] = useState("Select source docs, add your prompt, then generate a draft.");
   const [isWorking, setIsWorking] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchTemperatures, setBatchTemperatures] = useState<number[]>([0.6, 0.8, 1.0, 1.2]);
-  const [batchResults, setBatchResults] = useState<Array<{ temperature: number; markdown: string }>>([]);
+  const [batchResults, setBatchResults] = useState<BatchGenerationResult[]>([]);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [sexualProfile, setSexualProfile] = useState("");
   const [selectedBackstories, setSelectedBackstories] = useState<string[]>([]);
@@ -224,6 +235,9 @@ export function useWorkbench(props: {
     () => characters.find((c) => c.fileName === activeCharacter),
     [activeCharacter, characters],
   );
+  const qualityReportIsStale = Boolean(
+    draftQualityReport && analyzedMarkdownSnapshot && analyzedMarkdownSnapshot !== generatedMarkdown,
+  );
 
   function refreshFromPayload(payload: {
     documents?: LibraryDocument[];
@@ -302,6 +316,9 @@ export function useWorkbench(props: {
     setMessage("Generating character draft...");
     setIsWorking(true);
     setBatchResults([]);
+    setDraftQualityReport(null);
+    setOriginalDraftQualityReport(null);
+    setDraftWasAutoRewritten(false);
     void (async () => {
       try {
         const response = await fetch("/api/generate", {
@@ -328,10 +345,24 @@ export function useWorkbench(props: {
             provider,
           }),
         });
-        const payload = (await response.json()) as { markdown?: string; error?: string };
+        const payload = (await response.json()) as {
+          markdown?: string;
+          qualityReport?: DraftQualityReport;
+          originalQualityReport?: DraftQualityReport;
+          rewritten?: boolean;
+          error?: string;
+        };
         if (!response.ok) throw new Error(payload.error || "Unable to generate draft.");
         setGeneratedMarkdown(payload.markdown || "");
-        setMessage("Draft ready. Review the sections, then save to the character library.");
+        setDraftQualityReport(payload.qualityReport ?? null);
+        setOriginalDraftQualityReport(payload.originalQualityReport ?? null);
+        setDraftWasAutoRewritten(Boolean(payload.rewritten));
+        setAnalyzedMarkdownSnapshot(payload.markdown || "");
+        setMessage(
+          payload.rewritten
+            ? "Draft ready. A novelty rewrite was applied automatically before review."
+            : "Draft ready. Review the sections, then save to the character library.",
+        );
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Unable to generate draft.");
       } finally {
@@ -345,6 +376,10 @@ export function useWorkbench(props: {
     setIsWorking(true);
     setBatchResults([]);
     setGeneratedMarkdown("");
+    setDraftQualityReport(null);
+    setOriginalDraftQualityReport(null);
+    setDraftWasAutoRewritten(false);
+    setAnalyzedMarkdownSnapshot("");
     void (async () => {
       try {
         const response = await fetch("/api/generate/batch", {
@@ -373,7 +408,7 @@ export function useWorkbench(props: {
           }),
         });
         const payload = (await response.json()) as {
-          results?: Array<{ temperature: number; markdown: string }>;
+          results?: BatchGenerationResult[];
           error?: string;
         };
         if (!response.ok) throw new Error(payload.error || "Unable to generate batch.");
@@ -391,16 +426,83 @@ export function useWorkbench(props: {
     const result = batchResults[index];
     if (result) {
       setGeneratedMarkdown(result.markdown);
+      setDraftQualityReport(result.qualityReport);
+      setOriginalDraftQualityReport(null);
+      setDraftWasAutoRewritten(false);
+      setAnalyzedMarkdownSnapshot(result.markdown);
       setBatchResults([]);
       setMessage(`Selected temperature ${result.temperature} variation. Edit sections or save.`);
     }
   }
 
+  async function handleAnalyzeGeneratedDraft() {
+    try {
+      const response = await fetch("/api/generate/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          markdown: generatedMarkdown,
+          brief,
+          notes,
+          sexualProfile,
+          selectedDocuments,
+          selectedCharacters,
+          selectedTemplates: resolveTemplatePrompts(selectedTemplates),
+          selectedBackstories,
+          selectedScenarios,
+          howTheyMet: resolveHowTheyMetPrompt(howTheyMet),
+          physicalProfile,
+          emotionalLogic,
+          relationshipDynamic,
+          voiceProfile,
+          contrastNotes,
+          journalCategories,
+          selectedKinks,
+          mcProfile,
+        }),
+      });
+      const payload = (await response.json()) as { qualityReport?: DraftQualityReport; error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Unable to analyze draft.");
+      }
+
+      setDraftQualityReport(payload.qualityReport ?? null);
+      setOriginalDraftQualityReport(null);
+      setDraftWasAutoRewritten(false);
+      setAnalyzedMarkdownSnapshot(generatedMarkdown);
+
+      return payload.qualityReport ?? null;
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to analyze draft.");
+      return null;
+    }
+  }
+
   function handleSaveCharacter() {
+    if (!generatedMarkdown.trim()) {
+      return;
+    }
+
     setMessage("Saving generated draft into the character library...");
     setIsWorking(true);
     void (async () => {
       try {
+        let report = draftQualityReport;
+        if (!report || qualityReportIsStale) {
+          report = await handleAnalyzeGeneratedDraft();
+        }
+
+        if (!report) {
+          setMessage("Save blocked: unable to analyze the current draft.");
+          return;
+        }
+
+        if (report?.hasSevereIssues) {
+          const reason = report.blockingReasons[0] ?? "This draft needs revision before it can be saved.";
+          setMessage(`Save blocked: ${reason}`);
+          return;
+        }
+
         const response = await fetch("/api/characters", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -512,6 +614,10 @@ export function useWorkbench(props: {
     brief,
     notes,
     generatedMarkdown,
+    draftQualityReport,
+    originalDraftQualityReport,
+    draftWasAutoRewritten,
+    qualityReportIsStale,
     message,
     isWorking,
     activeDocumentRecord,
@@ -566,6 +672,7 @@ export function useWorkbench(props: {
     handleBatchGenerate,
     handleSelectBatchResult,
     handleSaveCharacter,
+    handleAnalyzeGeneratedDraft,
     handleUpdateCharacter,
     handleDeleteCharacter,
     handleUpdateMetadata,

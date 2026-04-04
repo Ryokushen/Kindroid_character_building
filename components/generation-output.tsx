@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CharacterSectionCard } from "./character-section-card";
+import { QualityReportCard } from "./quality-report-card";
+import type { DraftQualityReport } from "@/lib/types";
 
 export function GenerationOutput({
   generatedMarkdown,
@@ -18,7 +20,12 @@ export function GenerationOutput({
   notes,
   selectedDocuments,
   provider,
+  qualityReport,
+  originalQualityReport,
+  rewritten,
+  qualityReportIsStale,
   setGeneratedMarkdown,
+  onAnalyze,
   onSave,
 }: {
   generatedMarkdown: string;
@@ -27,7 +34,12 @@ export function GenerationOutput({
   notes: string;
   selectedDocuments: string[];
   provider: ProviderSettings;
+  qualityReport: DraftQualityReport | null;
+  originalQualityReport: DraftQualityReport | null;
+  rewritten: boolean;
+  qualityReportIsStale: boolean;
   setGeneratedMarkdown: Dispatch<SetStateAction<string>>;
+  onAnalyze: () => Promise<DraftQualityReport | null>;
   onSave: () => void;
 }) {
   const [regeneratingKey, setRegeneratingKey] = useState<string | null>(null);
@@ -108,15 +120,33 @@ export function GenerationOutput({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="font-heading text-sm font-semibold text-foreground">Generated output</h3>
-        <Button
-          size="sm"
-          onClick={onSave}
-          disabled={isWorking || !generatedMarkdown.trim()}
-          className="h-8"
-        >
-          Save to characters
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void onAnalyze()}
+            disabled={isWorking || !generatedMarkdown.trim()}
+            className="h-8"
+          >
+            Analyze draft
+          </Button>
+          <Button
+            size="sm"
+            onClick={onSave}
+            disabled={isWorking || !generatedMarkdown.trim() || Boolean(qualityReport?.hasSevereIssues && !qualityReportIsStale)}
+            className="h-8"
+          >
+            {qualityReport?.hasSevereIssues && !qualityReportIsStale ? "Revise to save" : "Save to characters"}
+          </Button>
+        </div>
       </div>
+
+      <QualityReportCard
+        report={qualityReport}
+        stale={qualityReportIsStale}
+        rewritten={rewritten}
+        originalReport={originalQualityReport}
+      />
 
       {overLimitSections.length > 0 && (
         <div className="rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3">

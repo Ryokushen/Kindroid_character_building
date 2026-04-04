@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const markdown = await generateCharacterDraft({
+    const result = await generateCharacterDraft({
       brief: body.brief,
       notes: body.notes ?? "",
       sexualProfile: body.sexualProfile ?? "",
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ markdown });
+    return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to generate character draft.";
     return NextResponse.json({ error: message }, { status: 400 });

@@ -1,5 +1,6 @@
 "use client";
 
+import type { BatchGenerationResult } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,7 +9,7 @@ export function BatchGenerationView({
   results,
   onSelect,
 }: {
-  results: Array<{ temperature: number; markdown: string }>;
+  results: BatchGenerationResult[];
   onSelect: (index: number) => void;
 }) {
   if (results.length === 0) return null;
@@ -31,10 +32,7 @@ export function BatchGenerationView({
             className="rounded-lg border border-border bg-muted/20 p-3 space-y-2"
           >
             <div className="flex items-center justify-between">
-              <Badge
-                variant="secondary"
-                className="bg-primary/10 text-primary font-mono text-xs"
-              >
+              <Badge variant="secondary" className="bg-primary/10 text-primary font-mono text-xs">
                 temp {result.temperature}
               </Badge>
               <Button
@@ -52,6 +50,25 @@ export function BatchGenerationView({
                 {result.markdown.length > 1500 && "\n..."}
               </pre>
             </ScrollArea>
+            <div className="grid grid-cols-2 gap-1.5">
+              <Badge variant="secondary" className="justify-center bg-muted/40 font-mono text-[10px]">
+                novelty {result.qualityReport.noveltyScore}
+              </Badge>
+              <Badge variant="secondary" className="justify-center bg-muted/40 font-mono text-[10px]">
+                contrast {result.qualityReport.contrastScore}
+              </Badge>
+              <Badge variant="secondary" className="justify-center bg-muted/40 font-mono text-[10px]">
+                internal {result.qualityReport.internalConsistencyScore}
+              </Badge>
+              <Badge variant="secondary" className="justify-center bg-muted/40 font-mono text-[10px]">
+                sexual {result.qualityReport.sexualConsistencyScore}
+              </Badge>
+            </div>
+            {result.qualityReport.hasSevereIssues && (
+              <p className="text-[10px] leading-relaxed text-red-400">
+                {result.qualityReport.blockingReasons[0] ?? "Severe quality issue detected."}
+              </p>
+            )}
           </div>
         ))}
       </div>

@@ -265,7 +265,12 @@ export function DraftBuilderPanel({
             notes={state.notes}
             selectedDocuments={state.selectedDocuments}
             provider={state.provider}
+            qualityReport={state.draftQualityReport}
+            originalQualityReport={state.originalDraftQualityReport}
+            rewritten={state.draftWasAutoRewritten}
+            qualityReportIsStale={state.qualityReportIsStale}
             setGeneratedMarkdown={actions.setGeneratedMarkdown}
+            onAnalyze={actions.handleAnalyzeGeneratedDraft}
             onSave={actions.handleSaveCharacter}
           />
         )}

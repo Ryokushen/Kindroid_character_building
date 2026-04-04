@@ -1,69 +1,15 @@
-import type { GenerationPayload, ProviderType, SectionRegenerationPayload } from "@/lib/types";
-import { buildCharacterReferenceContext } from "@/lib/characters";
+import type {
+  DraftAnalysisPayload,
+  GenerationPayload,
+  GenerationResult,
+  SectionRegenerationPayload,
+} from "@/lib/types";
+import { buildCharacterReferenceContext, listCharacters } from "@/lib/characters";
 import { buildDocumentContext } from "@/lib/library";
-
-function normalizeCompletionsUrl(baseUrl: string) {
-  const trimmed = baseUrl.trim().replace(/\/+$/, "");
-  if (!trimmed) {
-    throw new Error("Base URL is required.");
-  }
-
-  if (trimmed.endsWith("/chat/completions")) {
-    return trimmed;
-  }
-
-  return `${trimmed}/chat/completions`;
-}
-
-function normalizeAnthropicUrl(baseUrl: string) {
-  const trimmed = baseUrl.trim().replace(/\/+$/, "");
-  if (!trimmed) {
-    throw new Error("Base URL is required.");
-  }
-
-  if (trimmed.endsWith("/messages")) {
-    return trimmed;
-  }
-
-  return `${trimmed}/messages`;
-}
-
-function cleanModelOutput(content: string) {
-  const trimmed = content.trim();
-  const fencedMatch = trimmed.match(/^```(?:markdown|md)?\s*([\s\S]*?)```$/i);
-  return fencedMatch?.[1]?.trim() || trimmed;
-}
-
-function extractMessageContent(message: unknown) {
-  if (typeof message === "string") {
-    return message;
-  }
-
-  if (Array.isArray(message)) {
-    return message
-      .map((item) => {
-        if (typeof item === "string") {
-          return item;
-        }
-
-        if (
-          item &&
-          typeof item === "object" &&
-          "type" in item &&
-          item.type === "text" &&
-          "text" in item &&
-          typeof item.text === "string"
-        ) {
-          return item.text;
-        }
-
-        return "";
-      })
-      .join("\n");
-  }
-
-  return "";
-}
+import { buildReferenceContrastLines } from "@/lib/character-fingerprint";
+import { callModel } from "@/lib/model-client";
+import { rewriteDraftForNovelty } from "@/lib/novelty-pass";
+import { analyzeDraftQuality } from "@/lib/quality-checks";
 
 export function buildSystemPrompt() {
   return `You are an expert Kindroid character designer with deep knowledge of the Kindroid platform.
@@ -357,6 +303,7 @@ export function buildUserPrompt(input: {
   journalCategories?: import("@/lib/types").JournalCategories;
   selectedKinks?: import("@/lib/types").KinkPreference[];
   mcProfile?: import("@/lib/types").MCProfile;
+  contrastRequirements?: string[];
 }) {
   const parts: string[] = [];
 
@@ -521,6 +468,14 @@ export function buildUserPrompt(input: {
     parts.push("", "Scenario modifiers:", input.scenarioAdditions.join("\n"));
   }
 
+  if (input.contrastRequirements && input.contrastRequirements.length > 0) {
+    parts.push(
+      "",
+      "Required differences from selected reference characters — treat these as hard contrast constraints:",
+      input.contrastRequirements.join("\n"),
+    );
+  }
+
   // Character contrast notes
   if (input.contrastNotes?.trim()) {
     parts.push(
@@ -566,113 +521,7 @@ export function buildUserPrompt(input: {
 
   return parts.join("\n");
 }
-
-async function callOpenAICompatible(
-  endpoint: string,
-  apiKey: string,
-  model: string,
-  temperature: number,
-  systemPrompt: string,
-  userPrompt: string,
-) {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      temperature,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Model request failed (${response.status}): ${errorText.slice(0, 300)}`);
-  }
-
-  const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: unknown } }>;
-  };
-
-  const content = extractMessageContent(data.choices?.[0]?.message?.content);
-  if (!content.trim()) {
-    throw new Error("The model response did not contain any text.");
-  }
-
-  return cleanModelOutput(content);
-}
-
-async function callAnthropic(
-  endpoint: string,
-  apiKey: string,
-  model: string,
-  temperature: number,
-  systemPrompt: string,
-  userPrompt: string,
-) {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 8192,
-      temperature,
-      system: systemPrompt,
-      messages: [
-        { role: "user", content: userPrompt },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Anthropic request failed (${response.status}): ${errorText.slice(0, 300)}`);
-  }
-
-  const data = (await response.json()) as {
-    content?: Array<{ type: string; text?: string }>;
-  };
-
-  const textBlocks = data.content?.filter((b) => b.type === "text") ?? [];
-  const content = textBlocks.map((b) => b.text ?? "").join("\n");
-
-  if (!content.trim()) {
-    throw new Error("The Anthropic response did not contain any text.");
-  }
-
-  return cleanModelOutput(content);
-}
-
-async function callModel(
-  providerType: ProviderType,
-  baseUrl: string,
-  apiKey: string,
-  model: string,
-  temperature: number,
-  systemPrompt: string,
-  userPrompt: string,
-) {
-  if (providerType === "anthropic") {
-    const endpoint = normalizeAnthropicUrl(baseUrl);
-    return callAnthropic(endpoint, apiKey, model, temperature, systemPrompt, userPrompt);
-  }
-
-  // OpenAI and xAI both use the OpenAI-compatible format
-  const endpoint = normalizeCompletionsUrl(baseUrl);
-  return callOpenAICompatible(endpoint, apiKey, model, temperature, systemPrompt, userPrompt);
-}
-
-export async function generateCharacterDraft(payload: GenerationPayload) {
+async function generateCharacterDraftMarkdown(payload: GenerationPayload, contrastRequirements: string[]) {
   const documentContext = await buildDocumentContext(payload.selectedDocuments);
   const characterContext = await buildCharacterReferenceContext(payload.selectedCharacters);
 
@@ -701,8 +550,79 @@ export async function generateCharacterDraft(payload: GenerationPayload) {
       journalCategories: payload.journalCategories,
       selectedKinks: payload.selectedKinks,
       mcProfile: payload.mcProfile,
+      contrastRequirements,
     }),
   );
+}
+
+function toAnalysisPayload(payload: GenerationPayload, markdown: string): DraftAnalysisPayload {
+  return {
+    markdown,
+    brief: payload.brief,
+    notes: payload.notes,
+    sexualProfile: payload.sexualProfile,
+    selectedDocuments: payload.selectedDocuments,
+    selectedCharacters: payload.selectedCharacters,
+    selectedTemplates: payload.selectedTemplates,
+    selectedBackstories: payload.selectedBackstories,
+    selectedScenarios: payload.selectedScenarios,
+    howTheyMet: payload.howTheyMet,
+    physicalProfile: payload.physicalProfile,
+    emotionalLogic: payload.emotionalLogic,
+    relationshipDynamic: payload.relationshipDynamic,
+    voiceProfile: payload.voiceProfile,
+    contrastNotes: payload.contrastNotes,
+    journalCategories: payload.journalCategories,
+    selectedKinks: payload.selectedKinks,
+    mcProfile: payload.mcProfile,
+  };
+}
+
+export async function generateCharacterDraft(payload: GenerationPayload): Promise<GenerationResult> {
+  const activeCharacters = await listCharacters();
+  const referenceCharacters = activeCharacters.filter((character) =>
+    payload.selectedCharacters.includes(character.fileName),
+  );
+  const contrastRequirements = buildReferenceContrastLines(referenceCharacters);
+
+  const initialMarkdown = await generateCharacterDraftMarkdown(payload, contrastRequirements);
+  const initialQualityReport = analyzeDraftQuality({
+    markdown: initialMarkdown,
+    activeCharacters,
+    referenceCharacters,
+    analysisInput: toAnalysisPayload(payload, initialMarkdown),
+  });
+
+  if (!initialQualityReport.requiresRewrite) {
+    return {
+      markdown: initialMarkdown,
+      qualityReport: initialQualityReport,
+      rewritten: false,
+    };
+  }
+
+  try {
+    const rewrittenMarkdown = await rewriteDraftForNovelty(payload, initialMarkdown, initialQualityReport);
+    const rewrittenQualityReport = analyzeDraftQuality({
+      markdown: rewrittenMarkdown,
+      activeCharacters,
+      referenceCharacters,
+      analysisInput: toAnalysisPayload(payload, rewrittenMarkdown),
+    });
+
+    return {
+      markdown: rewrittenMarkdown,
+      qualityReport: rewrittenQualityReport,
+      rewritten: true,
+      originalQualityReport: initialQualityReport,
+    };
+  } catch {
+    return {
+      markdown: initialMarkdown,
+      qualityReport: initialQualityReport,
+      rewritten: false,
+    };
+  }
 }
 
 export async function generateSectionDraft(payload: SectionRegenerationPayload) {
@@ -778,8 +698,15 @@ export async function generateSectionDraft(payload: SectionRegenerationPayload) 
  * Returns { system, user, totalChars }.
  */
 export async function buildPromptPreview(payload: GenerationPayload) {
-  const documentContext = await buildDocumentContext(payload.selectedDocuments);
-  const characterContext = await buildCharacterReferenceContext(payload.selectedCharacters);
+  const [documentContext, characterContext, activeCharacters] = await Promise.all([
+    buildDocumentContext(payload.selectedDocuments),
+    buildCharacterReferenceContext(payload.selectedCharacters),
+    listCharacters(),
+  ]);
+  const referenceCharacters = activeCharacters.filter((character) =>
+    payload.selectedCharacters.includes(character.fileName),
+  );
+  const contrastRequirements = buildReferenceContrastLines(referenceCharacters);
 
   const system = buildSystemPrompt();
   const user = buildUserPrompt({
@@ -791,12 +718,16 @@ export async function buildPromptPreview(payload: GenerationPayload) {
     templateAdditions: payload.selectedTemplates,
     backstoryAdditions: payload.selectedBackstories,
     scenarioAdditions: payload.selectedScenarios,
+    howTheyMet: payload.howTheyMet,
+    physicalProfile: payload.physicalProfile,
     emotionalLogic: payload.emotionalLogic,
     relationshipDynamic: payload.relationshipDynamic,
     voiceProfile: payload.voiceProfile,
     contrastNotes: payload.contrastNotes,
     journalCategories: payload.journalCategories,
+    selectedKinks: payload.selectedKinks,
     mcProfile: payload.mcProfile,
+    contrastRequirements,
   });
 
   return {

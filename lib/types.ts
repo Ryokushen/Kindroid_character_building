@@ -167,6 +167,73 @@ export type GenerationPayload = {
   provider: ProviderSettings;
 };
 
+export type DraftAnalysisPayload = Omit<Partial<GenerationPayload>, "provider"> & {
+  markdown: string;
+  currentCharacterFileName?: string;
+};
+
+export type CharacterFingerprint = {
+  name: string;
+  sectionsPresent: CharacterSectionKey[];
+  tropeTags: string[];
+  emotionalTags: string[];
+  voiceTags: string[];
+  sexualTags: string[];
+  journalTopics: string[];
+  socialEnergy: string[];
+  conflictStyle: string[];
+  relationshipPatterns: string[];
+  availabilityStatus: string;
+  flirtationStyle: string;
+  powerDynamic: string;
+  emotionalTemperature: string;
+  attachmentStyle: string;
+  sexualJournalCount: number;
+  hasSexualJournals: boolean;
+  signalText: string;
+};
+
+export type QualityWarning = {
+  code: string;
+  severity: "info" | "warn" | "severe";
+  message: string;
+};
+
+export type CharacterOverlapSummary = {
+  fileName: string;
+  title: string;
+  score: number;
+  matchedAxes: string[];
+  distinctAxes: string[];
+};
+
+export type DraftQualityReport = {
+  noveltyScore: number;
+  overlapScore: number;
+  contrastScore: number;
+  internalConsistencyScore: number;
+  sexualConsistencyScore: number;
+  warnings: QualityWarning[];
+  topOverlaps: CharacterOverlapSummary[];
+  blockingReasons: string[];
+  hasSevereIssues: boolean;
+  requiresRewrite: boolean;
+  fingerprint: CharacterFingerprint;
+};
+
+export type GenerationResult = {
+  markdown: string;
+  qualityReport: DraftQualityReport;
+  rewritten?: boolean;
+  originalQualityReport?: DraftQualityReport;
+};
+
+export type BatchGenerationResult = {
+  temperature: number;
+  markdown: string;
+  qualityReport: DraftQualityReport;
+};
+
 // --- Character section types ---
 
 export type CharacterSectionKey =

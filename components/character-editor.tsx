@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import type { CharacterSummary, ProviderSettings } from "@/lib/types";
+import type { CharacterSummary, DraftQualityReport, ProviderSettings } from "@/lib/types";
 import { parseCharacterSections, reassembleMarkdown } from "@/lib/section-parser";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CharacterSectionCard } from "./character-section-card";
+import { QualityReportCard } from "./quality-report-card";
 
 export function CharacterEditor({
   character,
@@ -22,12 +23,17 @@ export function CharacterEditor({
   const [addingJournal, setAddingJournal] = useState(false);
   const [newJournalTopic, setNewJournalTopic] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [qualityReport, setQualityReport] = useState<DraftQualityReport | null>(null);
+  const [analyzedMarkdownSnapshot, setAnalyzedMarkdownSnapshot] = useState("");
 
   // Re-sync when a different character is selected
   const [trackedFile, setTrackedFile] = useState(character.fileName);
   if (character.fileName !== trackedFile) {
     setTrackedFile(character.fileName);
     setMarkdown(character.content);
+    setQualityReport(null);
+    setAnalyzedMarkdownSnapshot("");
   }
 
   const sections = useMemo(
@@ -36,6 +42,9 @@ export function CharacterEditor({
   );
 
   const hasChanges = markdown !== character.content;
+  const qualityReportIsStale = Boolean(
+    qualityReport && analyzedMarkdownSnapshot && analyzedMarkdownSnapshot !== markdown,
+  );
 
   const handleSectionContentChange = useCallback(
     (key: string, newContent: string) => {
@@ -139,8 +148,59 @@ export function CharacterEditor({
 
   function handleSave() {
     setIsSaving(true);
-    onSave(markdown);
-    setTimeout(() => setIsSaving(false), 1000);
+    void (async () => {
+      try {
+        let report = qualityReport;
+        if (!report || qualityReportIsStale) {
+          report = await handleAnalyze();
+        }
+
+        if (!report) {
+          setIsSaving(false);
+          return;
+        }
+
+        if (report?.hasSevereIssues) {
+          setIsSaving(false);
+          return;
+        }
+
+        onSave(markdown);
+        setTimeout(() => setIsSaving(false), 1000);
+      } catch {
+        setIsSaving(false);
+      }
+    })();
+  }
+
+  async function handleAnalyze() {
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch("/api/generate/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          markdown,
+          currentCharacterFileName: character.fileName,
+        }),
+      });
+      const payload = (await response.json()) as {
+        qualityReport?: DraftQualityReport;
+        error?: string;
+      };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to analyze character.");
+      }
+
+      setQualityReport(payload.qualityReport ?? null);
+      setAnalyzedMarkdownSnapshot(markdown);
+      return payload.qualityReport ?? null;
+    } catch (error) {
+      console.error("Character analysis failed:", error);
+      return null;
+    } finally {
+      setIsAnalyzing(false);
+    }
   }
 
   return (
@@ -149,15 +209,28 @@ export function CharacterEditor({
         <p className="text-xs text-muted-foreground">
           Edit sections, regenerate, or add journals. Save when done.
         </p>
-        <Button
-          size="sm"
-          onClick={handleSave}
-          disabled={!hasChanges || isSaving}
-          className="h-7"
-        >
-          {isSaving ? "Saved!" : hasChanges ? "Save changes" : "No changes"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void handleAnalyze()}
+            disabled={isAnalyzing}
+            className="h-7"
+          >
+            {isAnalyzing ? "Analyzing..." : "Analyze draft"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={!hasChanges || isSaving || Boolean(qualityReport?.hasSevereIssues && !qualityReportIsStale)}
+            className="h-7"
+          >
+            {isSaving ? "Saved!" : qualityReport?.hasSevereIssues && !qualityReportIsStale ? "Revise to save" : hasChanges ? "Save changes" : "No changes"}
+          </Button>
+        </div>
       </div>
+
+      <QualityReportCard report={qualityReport} stale={qualityReportIsStale} compact />
 
       <ScrollArea className="h-[calc(100vh-340px)] min-h-[400px]">
         <div className="space-y-2 pr-2">

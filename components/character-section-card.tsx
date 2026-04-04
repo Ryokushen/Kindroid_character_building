@@ -33,21 +33,21 @@ export function CharacterSectionCard({
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <div className={cn("rounded-lg border bg-muted/20 overflow-hidden", isOverLimit ? "border-red-500/50" : "border-border")}>
-        <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors hover:bg-muted/40">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2 text-left transition-colors hover:text-foreground">
             <svg
-              className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", open && "rotate-90")}
+              className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span className="text-sm font-semibold text-foreground">{section.label}</span>
+            <span className="truncate text-sm font-semibold text-foreground">{section.label}</span>
             {charLimit && (
               <span
                 className={cn(
-                  "font-mono text-[11px]",
+                  "shrink-0 font-mono text-[11px]",
                   isOverLimit
                     ? "text-red-400 font-bold"
                     : isNearLimit
@@ -59,20 +59,17 @@ export function CharacterSectionCard({
               </span>
             )}
             {section.isCodeBlock && (
-              <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-accent/10 text-accent">
+              <Badge variant="secondary" className="h-5 shrink-0 px-1.5 text-[10px] bg-accent/10 text-accent">
                 code block
               </Badge>
             )}
-          </div>
+          </CollapsibleTrigger>
           <Button
             variant="ghost"
             size="sm"
             className="h-7 px-2.5 text-xs text-primary hover:bg-primary/10 hover:text-primary"
             disabled={isRegenerating}
-            onClick={(e) => {
-              e.stopPropagation();
-              onRegenerate(section.key);
-            }}
+            onClick={() => onRegenerate(section.key)}
           >
             {isRegenerating ? (
               <span className="flex items-center gap-1.5">
@@ -83,7 +80,7 @@ export function CharacterSectionCard({
               "Regenerate"
             )}
           </Button>
-        </CollapsibleTrigger>
+        </div>
 
         <CollapsibleContent>
           <div className="border-t border-border px-4 py-3">
