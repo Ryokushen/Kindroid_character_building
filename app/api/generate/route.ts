@@ -45,10 +45,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ markdown });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to generate character draft.";
+    console.error("[generate] Error:", message);
     return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Unable to generate character draft.",
-      },
+      { error: message },
       { status: 400 },
     );
   }
