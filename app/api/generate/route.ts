@@ -9,11 +9,14 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Partial<GenerationPayload>;
 
     if (!body.brief?.trim()) {
-      throw new Error("A character brief is required.");
+      return NextResponse.json({ error: "A character brief is required." }, { status: 400 });
     }
 
     if (!body.provider?.baseUrl?.trim() || !body.provider?.model?.trim() || !body.provider?.apiKey?.trim()) {
-      throw new Error("Base URL, model, and API key are required.");
+      return NextResponse.json(
+        { error: `Provider config missing. baseUrl: ${!!body.provider?.baseUrl}, model: ${!!body.provider?.model}, apiKey: ${!!body.provider?.apiKey}` },
+        { status: 400 },
+      );
     }
 
     const markdown = await generateCharacterDraft({
