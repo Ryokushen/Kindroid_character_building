@@ -108,6 +108,7 @@ export type WorkbenchActions = {
   handleSelectBatchResult: (index: number) => void;
   handleSaveCharacter: () => void;
   handleUpdateCharacter: (fileName: string, markdown: string) => void;
+  handleDeleteCharacter: (fileName: string) => void;
   handleUpdateMetadata: (fileName: string, update: { tags?: string[]; favorite?: "toggle" }) => void;
 };
 
@@ -449,6 +450,35 @@ export function useWorkbench(props: {
     })();
   }
 
+  function handleDeleteCharacter(fileName: string) {
+    setMessage("Archiving character...");
+    setIsWorking(true);
+    void (async () => {
+      try {
+        const response = await fetch("/api/characters", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName }),
+        });
+        const payload = (await response.json()) as {
+          characters?: CharacterSummary[];
+          message?: string;
+          error?: string;
+        };
+        if (!response.ok) throw new Error(payload.error || "Unable to delete character.");
+        setSelectedCharacters((c) => c.filter((f) => f !== fileName));
+        if (activeCharacter === fileName) {
+          setActiveCharacter(payload.characters?.[0]?.fileName ?? "");
+        }
+        refreshFromPayload(payload);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Unable to delete character.");
+      } finally {
+        setIsWorking(false);
+      }
+    })();
+  }
+
   function handleUpdateMetadata(fileName: string, update: { tags?: string[]; favorite?: "toggle" }) {
     void (async () => {
       try {
@@ -537,6 +567,7 @@ export function useWorkbench(props: {
     handleSelectBatchResult,
     handleSaveCharacter,
     handleUpdateCharacter,
+    handleDeleteCharacter,
     handleUpdateMetadata,
   };
 

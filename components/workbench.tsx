@@ -49,6 +49,7 @@ export function Workbench({
           provider={state.provider}
           onSetActive={(f) => actions.setActiveCharacter(f)}
           onUpdateCharacter={actions.handleUpdateCharacter}
+          onDeleteCharacter={actions.handleDeleteCharacter}
         />
       </div>
     </main>

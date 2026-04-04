@@ -5,6 +5,7 @@ import type { CharacterSummary } from "@/lib/types";
 import { extractHeading, sanitizeFileName, stripMarkdown, truncate } from "@/lib/utils";
 
 const CHARACTERS_DIR = path.join(process.cwd(), "characters");
+const ARCHIVE_DIR = path.join(CHARACTERS_DIR, "archive");
 
 async function readCharacter(fileName: string): Promise<CharacterSummary> {
   const safeName = path.basename(fileName);
@@ -63,6 +64,14 @@ export async function updateCharacterMarkdown(fileName: string, markdown: string
 
   await fs.writeFile(absolutePath, `${trimmed}\n`, "utf8");
   return readCharacter(safeName);
+}
+
+export async function deleteCharacter(fileName: string) {
+  const safeName = path.basename(fileName);
+  const src = path.join(CHARACTERS_DIR, safeName);
+  await fs.stat(src); // verify exists
+  await fs.mkdir(ARCHIVE_DIR, { recursive: true });
+  await fs.rename(src, path.join(ARCHIVE_DIR, safeName));
 }
 
 export async function buildCharacterReferenceContext(selectedCharacters: string[], maxChars = 60000) {

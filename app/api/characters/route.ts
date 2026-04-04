@@ -1,6 +1,28 @@
 import { NextResponse } from "next/server";
 
-import { listCharacters, saveCharacterMarkdown, updateCharacterMarkdown } from "@/lib/characters";
+import { listCharacters, saveCharacterMarkdown, updateCharacterMarkdown, deleteCharacter } from "@/lib/characters";
+
+export async function DELETE(request: Request) {
+  try {
+    const body = (await request.json()) as { fileName?: string };
+    if (!body.fileName) {
+      throw new Error("fileName is required.");
+    }
+
+    await deleteCharacter(body.fileName);
+    const characters = await listCharacters();
+
+    return NextResponse.json({
+      characters,
+      message: `Character archived.`,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unable to delete character." },
+      { status: 400 },
+    );
+  }
+}
 
 export async function GET() {
   const characters = await listCharacters();

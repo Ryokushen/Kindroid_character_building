@@ -17,6 +17,7 @@ export function CharacterPanel({
   provider,
   onSetActive,
   onUpdateCharacter,
+  onDeleteCharacter,
 }: {
   characters: CharacterSummary[];
   activeCharacter: string;
@@ -24,6 +25,7 @@ export function CharacterPanel({
   provider: ProviderSettings;
   onSetActive: (fileName: string) => void;
   onUpdateCharacter: (fileName: string, markdown: string) => void;
+  onDeleteCharacter: (fileName: string) => void;
 }) {
   return (
     <Card className="border-border bg-card/60 backdrop-blur-md">
@@ -46,6 +48,7 @@ export function CharacterPanel({
           characters={characters}
           activeCharacter={activeCharacter}
           onSetActive={onSetActive}
+          onDelete={onDeleteCharacter}
         />
 
         <Separator className="bg-border/60" />
