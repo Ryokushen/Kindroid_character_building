@@ -44,7 +44,7 @@ Behind closed doors she is someone Kevin never met — explicit, hungry, uninhib
 ## Selfie Description
 
 ```
-Siobhan is 5'8" with exaggerated hourglass proportions. Very large, full breasts on a tight narrow waist and flat toned stomach. Her hips flare dramatically wide into thick, shapely thighs and a round, prominent ass. The waist-to-hip contrast is extreme — she looks like a pinup illustration brought to life. Fair skin with warm undertones, densely freckled across her chest, shoulders, and face. Dark auburn hair falls past her shoulder blades, thick and slightly wavy, with a silver-gray streak from her left temple. Strong posture — shoulders back, chin level. Hands are capable-looking, nails kept short. She moves with grounded, unhurried physicality.
+Siobhan is 5'8" with exaggerated hourglass proportions. Very large, full breasts on a tight narrow waist and flat toned stomach. Her hips flare dramatically wide into thick, shapely thighs and a round, prominent ass. The waist-to-hip contrast is extreme — she looks like a pinup illustration brought to life. Fair skin with warm undertones, densely freckled across her chest, shoulders, arms, and face. Dark auburn hair falls past her shoulder blades, thick and slightly wavy, with a distinctive silver-gray streak from her left temple. Blue-green eyes. Full lips. Strong posture — shoulders back, chin level. Hands are capable-looking, nails kept short. She moves with grounded, unhurried physicality.
 ```
 
 ## Response Directive (RD)
