@@ -1,25 +1,25 @@
 # Kindroid Character Workbench
 
-Local-first workspace for building Kindroid characters against a maintainable source repository.
+Local-first Next.js app for building Kindroid characters against a curated repository of best-practice documents.
 
-## What this MVP does
+## What it does
 
-- Uses the existing `PDF-Text/` folder as the active best-practices repository
-- Lets you add new repository notes or upload `.txt` / `.md` files
-- Archives repository documents into `PDF-Text/.archive/` instead of deleting them outright
-- Browses the current `characters/` folder
-- Generates a structured character draft through an OpenAI-compatible chat completions endpoint
-- Saves the generated markdown back into `characters/`
+- Uses `PDF-Text/` as the live knowledge library for prompting
+- Lets you add, archive, tag, and favorite repository documents
+- Generates character drafts from selected docs plus optional reference characters
+- Supports guided character building with structured inputs for backstory, relationship dynamic, voice, emotional logic, scenarios, and MC profile
+- Supports batch generation across multiple temperatures
+- Supports section-level regeneration and prompt preview flows
+- Saves generated characters into `characters/`
+- Provides a dedicated saved-character library at `/characters`
 
-## Why the AI setup is "OpenAI-compatible"
+## Current provider support
 
-For the first cut, the app accepts:
+- OpenAI
+- Anthropic
+- xAI
 
-- a base URL
-- a model name
-- an API key
-
-That covers OpenAI and many compatible providers such as OpenRouter, Groq, Together, and similar APIs. If you later want native Anthropic or Gemini support, the app can grow a provider adapter layer without changing the rest of the product.
+Provider settings are configured in-app and stored locally in the browser. See [docs/providers.md](docs/providers.md).
 
 ## Run locally
 
@@ -28,20 +28,35 @@ npm install
 npm run dev
 ```
 
-Then open `http://localhost:3000`.
+Open `http://localhost:3000`.
 
-## Current structure
+## Documentation
 
-- `app/` UI and API routes
-- `components/` client dashboard
-- `lib/` file-backed repository, character, and generation helpers
-- `PDF-Text/` live knowledge repository
-- `characters/` saved character files
+- [docs/README.md](docs/README.md)
+- [docs/workflow.md](docs/workflow.md)
+- [docs/providers.md](docs/providers.md)
+- [docs/storage.md](docs/storage.md)
+- [docs/character-format.md](docs/character-format.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/api-routes.md](docs/api-routes.md)
+- [docs/testing.md](docs/testing.md)
+- [docs/prompt-design.md](docs/prompt-design.md)
+- [docs/roadmap.md](docs/roadmap.md)
+- [docs/deployment.md](docs/deployment.md)
+- [docs/contributing.md](docs/contributing.md)
+- [docs/auth-and-multi-user.md](docs/auth-and-multi-user.md)
+- [docs/storage-migration.md](docs/storage-migration.md)
 
-## Next sensible expansions
+## Project structure
 
-- search and tagging for repository docs
-- side-by-side edit mode for generated drafts
-- template presets for different Kindroid archetypes
-- native adapters for Anthropic and Gemini
-- vector retrieval or chunked ranking when the document library grows
+- `app/` Next.js pages and API routes
+- `components/` client UI
+- `hooks/` stateful workbench logic
+- `lib/` generation, parsing, templates, and file-backed data helpers
+- `PDF-Text/` repository documents
+- `characters/` saved character markdown files
+
+## Notes
+
+- Storage is file-based. There is no database.
+- `CLAUDE.md` is still useful as an internal engineering reference, but the `docs/` folder is now the main repo documentation surface.
