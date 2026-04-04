@@ -31,6 +31,7 @@ import { resolveScenarioPrompts } from "@/lib/scenario-templates";
 import type { DiscoveryMode, DiscoveryPreferenceStore, DiscoveryReaction } from "@/lib/random-seed";
 import {
   buildDiscoveryPreset,
+  buildConceptSeed,
   createEmptyDiscoveryPreferenceStore,
   recordDiscoveryReaction,
 } from "@/lib/random-seed";
@@ -128,6 +129,7 @@ export type WorkbenchActions = {
   handleBatchGenerate: () => void;
   handleSurpriseMe: () => void;
   handleSurpriseMeSingle: () => void;
+  handleRollConcept: () => void;
   handleSelectBatchResult: (index: number) => void;
   handleRemixBatchResult: (index: number) => void;
   handleRateBatchResult: (index: number, reaction: DiscoveryReaction) => void;
@@ -678,6 +680,38 @@ export function useWorkbench(props: {
     })();
   }
 
+  function handleRollConcept() {
+    const concept = buildConceptSeed({
+      mode: discoveryMode,
+      preferences: discoveryPreferences,
+    });
+
+    // Apply concept fields to the builder without touching physical profile or kinks
+    setBrief(concept.brief);
+    setNotes(concept.notes);
+    setSelectedTemplates(concept.selectedTemplates);
+    setSelectedBackstories(concept.selectedBackstories);
+    setSelectedScenarios(concept.selectedScenarios);
+    setHowTheyMet(concept.howTheyMet);
+    setEmotionalLogic(concept.emotionalLogic);
+    setRelationshipDynamic(concept.relationshipDynamic);
+    setVoiceProfile(concept.voiceProfile);
+    setJournalCategories(concept.journalCategories);
+    setDiscoverySeedSummary(concept.summary);
+
+    // Clear generation output but don't start generating
+    setGeneratedMarkdown("");
+    setBatchResults([]);
+    setBatchRatings({});
+    setDraftQualityReport(null);
+    setOriginalDraftQualityReport(null);
+    setDraftWasAutoRewritten(false);
+    setAnalyzedMarkdownSnapshot("");
+    setIsBatchMode(false);
+
+    setMessage(`Concept rolled: ${concept.summary}. Review the builder tabs, customize, then generate.`);
+  }
+
   function handleRemixBatchResult(index: number) {
     const source = batchResults[index];
     if (!source) {
@@ -1004,6 +1038,7 @@ export function useWorkbench(props: {
     handleBatchGenerate,
     handleSurpriseMe,
     handleSurpriseMeSingle,
+    handleRollConcept,
     handleSelectBatchResult,
     handleRemixBatchResult,
     handleRateBatchResult,

@@ -691,3 +691,61 @@ export function recordDiscoveryReaction(
 
   return next;
 }
+
+/**
+ * Roll a random character concept — fills in personality, backstory, scenario,
+ * emotional logic, relationship dynamic, voice, and how-they-met — but does NOT
+ * touch physical profile, kinks, or sexual profile. Returns field values for the
+ * builder without triggering generation.
+ */
+export type ConceptSeed = {
+  summary: string;
+  brief: string;
+  notes: string;
+  selectedTemplates: string[];
+  selectedBackstories: string[];
+  selectedScenarios: string[];
+  howTheyMet: string;
+  emotionalLogic: EmotionalLogic;
+  relationshipDynamic: RelationshipDynamic;
+  voiceProfile: VoiceProfile;
+  journalCategories: JournalCategories;
+};
+
+export function buildConceptSeed(input: {
+  mode: DiscoveryMode;
+  preferences?: DiscoveryPreferenceStore;
+}): ConceptSeed {
+  const templateIds = pickMany(
+    MODE_TEMPLATES[input.mode],
+    input.mode === "wild-card" ? 2 : Math.random() < 0.6 ? 1 : 2,
+    "template",
+    input.preferences,
+  );
+  const backstoryId = weightedPick(MODE_BACKSTORIES[input.mode], "backstory", input.preferences);
+  const scenarioId = weightedPick(MODE_SCENARIOS[input.mode], "scenario", input.preferences);
+  const howTheyMet = weightedPick(MODE_HOW_THEY_MET[input.mode], "meet", input.preferences);
+  const emotionalLogic = randomItem(EMOTIONAL_PRESETS[input.mode]);
+  const relationshipDynamic = randomItem(RELATIONSHIP_PRESETS[input.mode]);
+  const voiceProfile = randomItem(VOICE_PRESETS[input.mode]);
+  const summary = buildSummary(input.mode, templateIds, backstoryId, scenarioId, howTheyMet);
+
+  const templateNames = templateIds
+    .map((id) => CHARACTER_TEMPLATES.find((t) => t.id === id)?.name)
+    .filter(Boolean)
+    .join(" + ");
+
+  return {
+    summary,
+    brief: `Female romance interest. Personality direction: ${templateNames}. Review and customize the builder fields, then generate.`,
+    notes: "",
+    selectedTemplates: templateIds,
+    selectedBackstories: [backstoryId],
+    selectedScenarios: [scenarioId],
+    howTheyMet,
+    emotionalLogic,
+    relationshipDynamic,
+    voiceProfile,
+    journalCategories: pickJournalCategories(input.mode),
+  };
+}

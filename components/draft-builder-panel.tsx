@@ -138,6 +138,14 @@ export function DraftBuilderPanel({
 
           <div className="flex flex-wrap items-center gap-2">
             <Button
+              variant="outline"
+              onClick={actions.handleRollConcept}
+              disabled={state.isWorking}
+              className="text-accent border-accent/30 hover:bg-accent/10"
+            >
+              Roll Concept
+            </Button>
+            <Button
               variant="secondary"
               onClick={actions.handleSurpriseMeSingle}
               disabled={state.isWorking}
