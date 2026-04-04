@@ -1,16 +1,24 @@
 "use client";
 
 import type { BatchGenerationResult } from "@/lib/types";
+import type { DiscoveryReaction } from "@/lib/random-seed";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 export function BatchGenerationView({
   results,
+  ratings,
   onSelect,
+  onRemix,
+  onRate,
 }: {
   results: BatchGenerationResult[];
+  ratings: Record<number, DiscoveryReaction>;
   onSelect: (index: number) => void;
+  onRemix: (index: number) => void;
+  onRate: (index: number, reaction: DiscoveryReaction) => void;
 }) {
   if (results.length === 0) return null;
 
@@ -69,6 +77,35 @@ export function BatchGenerationView({
                 {result.qualityReport.blockingReasons[0] ?? "Severe quality issue detected."}
               </p>
             )}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {([
+                { id: "like", label: "Like" },
+                { id: "maybe", label: "Maybe" },
+                { id: "pass", label: "Pass" },
+              ] as const).map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => onRate(index, option.id)}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-[10px] font-medium transition-all",
+                    ratings[index] === option.id
+                      ? "border-primary/50 bg-primary/15 text-primary"
+                      : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[10px] text-primary hover:bg-primary/10"
+                onClick={() => onRemix(index)}
+              >
+                Remix
+              </Button>
+            </div>
           </div>
         ))}
       </div>

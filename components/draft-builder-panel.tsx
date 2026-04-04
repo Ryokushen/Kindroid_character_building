@@ -3,6 +3,10 @@
 import { useState } from "react";
 import type { WorkbenchActions, WorkbenchState } from "@/hooks/use-workbench";
 import { resolveTemplatePrompts } from "@/components/template-selector";
+import { resolveBackstoryPrompts } from "@/lib/backstory-architectures";
+import { resolveHowTheyMetPrompt } from "@/lib/how-they-met";
+import { DISCOVERY_MODE_META } from "@/lib/random-seed";
+import { resolveScenarioPrompts } from "@/lib/scenario-templates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,9 +52,9 @@ export function DraftBuilderPanel({
           selectedDocuments: state.selectedDocuments,
           selectedCharacters: state.selectedCharacters,
           selectedTemplates: resolveTemplatePrompts(state.selectedTemplates),
-          selectedBackstories: state.selectedBackstories,
-          selectedScenarios: state.selectedScenarios,
-          howTheyMet: state.howTheyMet,
+          selectedBackstories: resolveBackstoryPrompts(state.selectedBackstories),
+          selectedScenarios: resolveScenarioPrompts(state.selectedScenarios),
+          howTheyMet: resolveHowTheyMetPrompt(state.howTheyMet),
           physicalProfile: state.physicalProfile,
           emotionalLogic: state.emotionalLogic,
           relationshipDynamic: state.relationshipDynamic,
@@ -97,6 +101,57 @@ export function DraftBuilderPanel({
         />
 
         <Separator className="bg-border/60" />
+
+        <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary">
+                Discovery Mode
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Generate random romance candidates with a hidden seed, then rate what you like.
+              </p>
+            </div>
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              {state.discoveryPreferenceCount} reactions learned
+            </Badge>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {DISCOVERY_MODE_META.map((mode) => (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => actions.setDiscoveryMode(mode.id)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                  state.discoveryMode === mode.id
+                    ? "border-primary/50 bg-primary/15 text-primary"
+                    : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                )}
+                title={mode.description}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={actions.handleSurpriseMe}
+              disabled={state.isWorking}
+              className="bg-primary/10 text-primary hover:bg-primary/15"
+            >
+              {state.isWorking ? "Generating..." : "Surprise Me x4"}
+            </Button>
+            {state.discoverySeedSummary && (
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Current seed: {state.discoverySeedSummary}
+              </p>
+            )}
+          </div>
+        </div>
 
         <BriefForm state={state} actions={actions} />
 
@@ -255,7 +310,10 @@ export function DraftBuilderPanel({
         {state.batchResults.length > 0 ? (
           <BatchGenerationView
             results={state.batchResults}
+            ratings={state.batchRatings}
             onSelect={actions.handleSelectBatchResult}
+            onRemix={actions.handleRemixBatchResult}
+            onRate={actions.handleRateBatchResult}
           />
         ) : (
           <GenerationOutput

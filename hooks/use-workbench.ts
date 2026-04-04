@@ -25,11 +25,21 @@ import {
   DEFAULT_VOICE_PROFILE,
 } from "@/lib/types";
 import { resolveTemplatePrompts } from "@/components/template-selector";
+import { resolveBackstoryPrompts } from "@/lib/backstory-architectures";
 import { resolveHowTheyMetPrompt } from "@/lib/how-they-met";
+import { resolveScenarioPrompts } from "@/lib/scenario-templates";
+import type { DiscoveryMode, DiscoveryPreferenceStore, DiscoveryReaction } from "@/lib/random-seed";
+import {
+  buildDiscoveryPreset,
+  createEmptyDiscoveryPreferenceStore,
+  recordDiscoveryReaction,
+} from "@/lib/random-seed";
 
 const LOCAL_STORAGE_KEY = "kindroid-workbench-provider";
 const API_KEYS_STORAGE_KEY = "kindroid-workbench-api-keys";
 const MC_PROFILE_STORAGE_KEY = "kindroid-workbench-mc-profile";
+const DISCOVERY_MODE_STORAGE_KEY = "kindroid-workbench-discovery-mode";
+const DISCOVERY_PREFS_STORAGE_KEY = "kindroid-workbench-discovery-prefs";
 
 const defaultProviderSettings: ProviderSettings = {
   providerType: "openai",
@@ -55,6 +65,9 @@ export type WorkbenchState = {
   originalDraftQualityReport: DraftQualityReport | null;
   draftWasAutoRewritten: boolean;
   qualityReportIsStale: boolean;
+  discoveryMode: DiscoveryMode;
+  discoverySeedSummary: string;
+  discoveryPreferenceCount: number;
   message: string;
   isWorking: boolean;
   activeDocumentRecord: LibraryDocument | undefined;
@@ -63,6 +76,7 @@ export type WorkbenchState = {
   isBatchMode: boolean;
   batchTemperatures: number[];
   batchResults: BatchGenerationResult[];
+  batchRatings: Record<number, DiscoveryReaction>;
   // Templates
   selectedTemplates: string[];
   // Sexual profile
@@ -91,6 +105,7 @@ export type WorkbenchActions = {
   setNotes: Dispatch<SetStateAction<string>>;
   setGeneratedMarkdown: Dispatch<SetStateAction<string>>;
   setIsBatchMode: Dispatch<SetStateAction<boolean>>;
+  setDiscoveryMode: Dispatch<SetStateAction<DiscoveryMode>>;
   setBatchTemperatures: Dispatch<SetStateAction<number[]>>;
   setSelectedTemplates: Dispatch<SetStateAction<string[]>>;
   setSexualProfile: Dispatch<SetStateAction<string>>;
@@ -111,7 +126,10 @@ export type WorkbenchActions = {
   handleArchiveDocument: (fileName: string) => void;
   handleGenerate: () => void;
   handleBatchGenerate: () => void;
+  handleSurpriseMe: () => void;
   handleSelectBatchResult: (index: number) => void;
+  handleRemixBatchResult: (index: number) => void;
+  handleRateBatchResult: (index: number, reaction: DiscoveryReaction) => void;
   handleSaveCharacter: () => void;
   handleAnalyzeGeneratedDraft: () => Promise<DraftQualityReport | null>;
   handleUpdateCharacter: (fileName: string, markdown: string) => void;
@@ -150,11 +168,17 @@ export function useWorkbench(props: {
   const [originalDraftQualityReport, setOriginalDraftQualityReport] = useState<DraftQualityReport | null>(null);
   const [draftWasAutoRewritten, setDraftWasAutoRewritten] = useState(false);
   const [analyzedMarkdownSnapshot, setAnalyzedMarkdownSnapshot] = useState("");
+  const [discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>("romanceable");
+  const [discoverySeedSummary, setDiscoverySeedSummary] = useState("");
+  const [discoveryPreferences, setDiscoveryPreferences] = useState<DiscoveryPreferenceStore>(
+    createEmptyDiscoveryPreferenceStore(),
+  );
   const [message, setMessage] = useState("Select source docs, add your prompt, then generate a draft.");
   const [isWorking, setIsWorking] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchTemperatures, setBatchTemperatures] = useState<number[]>([0.6, 0.8, 1.0, 1.2]);
   const [batchResults, setBatchResults] = useState<BatchGenerationResult[]>([]);
+  const [batchRatings, setBatchRatings] = useState<Record<number, DiscoveryReaction>>({});
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [sexualProfile, setSexualProfile] = useState("");
   const [selectedBackstories, setSelectedBackstories] = useState<string[]>([]);
@@ -226,6 +250,33 @@ export function useWorkbench(props: {
     }
   }, [mcProfile]);
 
+  useEffect(() => {
+    try {
+      const storedMode = window.localStorage.getItem(DISCOVERY_MODE_STORAGE_KEY);
+      if (storedMode === "romanceable" || storedMode === "high-heat" || storedMode === "wild-card") {
+        setDiscoveryMode(storedMode);
+      }
+
+      const storedPrefs = window.localStorage.getItem(DISCOVERY_PREFS_STORAGE_KEY);
+      if (storedPrefs) {
+        const parsed = JSON.parse(storedPrefs) as DiscoveryPreferenceStore;
+        if (parsed && typeof parsed === "object" && parsed.featureScores) {
+          setDiscoveryPreferences(parsed);
+        }
+      }
+    } catch {
+      // Ignore invalid discovery storage.
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(DISCOVERY_MODE_STORAGE_KEY, discoveryMode);
+  }, [discoveryMode]);
+
+  useEffect(() => {
+    window.localStorage.setItem(DISCOVERY_PREFS_STORAGE_KEY, JSON.stringify(discoveryPreferences));
+  }, [discoveryPreferences]);
+
   const activeDocumentRecord = useMemo(
     () => documents.find((d) => d.fileName === activeDocument),
     [activeDocument, documents],
@@ -255,6 +306,96 @@ export function useWorkbench(props: {
     if (payload.message) setMessage(payload.message);
   }
 
+  type BuilderSnapshot = {
+    brief: string;
+    notes: string;
+    sexualProfile: string;
+    selectedDocuments: string[];
+    selectedCharacters: string[];
+    selectedTemplates: string[];
+    selectedBackstories: string[];
+    selectedScenarios: string[];
+    howTheyMet: string;
+    physicalProfile: PhysicalProfile;
+    emotionalLogic: EmotionalLogic;
+    relationshipDynamic: RelationshipDynamic;
+    voiceProfile: VoiceProfile;
+    contrastNotes: string;
+    journalCategories: JournalCategories;
+    selectedKinks: KinkPreference[];
+    mcProfile: MCProfile;
+    provider: ProviderSettings;
+    batchTemperatures: number[];
+  };
+
+  function getBuilderSnapshot(overrides: Partial<BuilderSnapshot> = {}): BuilderSnapshot {
+    return {
+      brief,
+      notes,
+      sexualProfile,
+      selectedDocuments,
+      selectedCharacters,
+      selectedTemplates,
+      selectedBackstories,
+      selectedScenarios,
+      howTheyMet,
+      physicalProfile,
+      emotionalLogic,
+      relationshipDynamic,
+      voiceProfile,
+      contrastNotes,
+      journalCategories,
+      selectedKinks,
+      mcProfile,
+      provider,
+      batchTemperatures,
+      ...overrides,
+    };
+  }
+
+  function buildRequestPayload(snapshot: BuilderSnapshot) {
+    return {
+      brief: snapshot.brief,
+      notes: snapshot.notes,
+      sexualProfile: snapshot.sexualProfile,
+      selectedDocuments: snapshot.selectedDocuments,
+      selectedCharacters: snapshot.selectedCharacters,
+      selectedTemplates: resolveTemplatePrompts(snapshot.selectedTemplates),
+      selectedBackstories: resolveBackstoryPrompts(snapshot.selectedBackstories),
+      selectedScenarios: resolveScenarioPrompts(snapshot.selectedScenarios),
+      howTheyMet: resolveHowTheyMetPrompt(snapshot.howTheyMet),
+      physicalProfile: snapshot.physicalProfile,
+      emotionalLogic: snapshot.emotionalLogic,
+      relationshipDynamic: snapshot.relationshipDynamic,
+      voiceProfile: snapshot.voiceProfile,
+      contrastNotes: snapshot.contrastNotes,
+      journalCategories: snapshot.journalCategories,
+      selectedKinks: snapshot.selectedKinks,
+      mcProfile: snapshot.mcProfile,
+      provider: snapshot.provider,
+    };
+  }
+
+  function applySnapshot(snapshot: BuilderSnapshot, seedSummary = "") {
+    setBrief(snapshot.brief);
+    setNotes(snapshot.notes);
+    setSexualProfile(snapshot.sexualProfile);
+    setSelectedCharacters(snapshot.selectedCharacters);
+    setSelectedTemplates(snapshot.selectedTemplates);
+    setSelectedBackstories(snapshot.selectedBackstories);
+    setSelectedScenarios(snapshot.selectedScenarios);
+    setHowTheyMet(snapshot.howTheyMet);
+    setPhysicalProfile(snapshot.physicalProfile);
+    setEmotionalLogic(snapshot.emotionalLogic);
+    setRelationshipDynamic(snapshot.relationshipDynamic);
+    setVoiceProfile(snapshot.voiceProfile);
+    setContrastNotes(snapshot.contrastNotes);
+    setJournalCategories(snapshot.journalCategories);
+    setSelectedKinks(snapshot.selectedKinks);
+    setBatchTemperatures(snapshot.batchTemperatures);
+    setDiscoverySeedSummary(seedSummary);
+  }
+
   function handleAddDocument(formData: FormData) {
     setMessage("Adding repository document...");
     setIsWorking(true);
@@ -281,6 +422,44 @@ export function useWorkbench(props: {
         setIsWorking(false);
       }
     })();
+  }
+
+  async function requestSingleGeneration(snapshot: BuilderSnapshot) {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(buildRequestPayload(snapshot)),
+    });
+
+    return {
+      ok: response.ok,
+      payload: (await response.json()) as {
+        markdown?: string;
+        qualityReport?: DraftQualityReport;
+        originalQualityReport?: DraftQualityReport;
+        rewritten?: boolean;
+        error?: string;
+      },
+    };
+  }
+
+  async function requestBatchGeneration(snapshot: BuilderSnapshot) {
+    const response = await fetch("/api/generate/batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...buildRequestPayload(snapshot),
+        temperatures: snapshot.batchTemperatures,
+      }),
+    });
+
+    return {
+      ok: response.ok,
+      payload: (await response.json()) as {
+        results?: BatchGenerationResult[];
+        error?: string;
+      },
+    };
   }
 
   function handleArchiveDocument(fileName: string) {
@@ -316,43 +495,14 @@ export function useWorkbench(props: {
     setMessage("Generating character draft...");
     setIsWorking(true);
     setBatchResults([]);
+    setBatchRatings({});
     setDraftQualityReport(null);
     setOriginalDraftQualityReport(null);
     setDraftWasAutoRewritten(false);
     void (async () => {
       try {
-        const response = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            brief,
-            notes,
-            sexualProfile,
-            selectedDocuments,
-            selectedCharacters,
-            selectedTemplates: resolveTemplatePrompts(selectedTemplates),
-            selectedBackstories,
-            selectedScenarios,
-            howTheyMet: resolveHowTheyMetPrompt(howTheyMet),
-            physicalProfile,
-            emotionalLogic,
-            relationshipDynamic,
-            voiceProfile,
-            contrastNotes,
-            journalCategories,
-            selectedKinks,
-            mcProfile,
-            provider,
-          }),
-        });
-        const payload = (await response.json()) as {
-          markdown?: string;
-          qualityReport?: DraftQualityReport;
-          originalQualityReport?: DraftQualityReport;
-          rewritten?: boolean;
-          error?: string;
-        };
-        if (!response.ok) throw new Error(payload.error || "Unable to generate draft.");
+        const { ok, payload } = await requestSingleGeneration(getBuilderSnapshot());
+        if (!ok) throw new Error(payload.error || "Unable to generate draft.");
         setGeneratedMarkdown(payload.markdown || "");
         setDraftQualityReport(payload.qualityReport ?? null);
         setOriginalDraftQualityReport(payload.originalQualityReport ?? null);
@@ -375,6 +525,7 @@ export function useWorkbench(props: {
     setMessage(`Generating ${batchTemperatures.length} temperature variations...`);
     setIsWorking(true);
     setBatchResults([]);
+    setBatchRatings({});
     setGeneratedMarkdown("");
     setDraftQualityReport(null);
     setOriginalDraftQualityReport(null);
@@ -382,36 +533,8 @@ export function useWorkbench(props: {
     setAnalyzedMarkdownSnapshot("");
     void (async () => {
       try {
-        const response = await fetch("/api/generate/batch", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            brief,
-            notes,
-            sexualProfile,
-            selectedDocuments,
-            selectedCharacters,
-            selectedTemplates: resolveTemplatePrompts(selectedTemplates),
-            selectedBackstories,
-            selectedScenarios,
-            howTheyMet: resolveHowTheyMetPrompt(howTheyMet),
-            physicalProfile,
-            emotionalLogic,
-            relationshipDynamic,
-            voiceProfile,
-            contrastNotes,
-            journalCategories,
-            selectedKinks,
-            mcProfile,
-            provider,
-            temperatures: batchTemperatures,
-          }),
-        });
-        const payload = (await response.json()) as {
-          results?: BatchGenerationResult[];
-          error?: string;
-        };
-        if (!response.ok) throw new Error(payload.error || "Unable to generate batch.");
+        const { ok, payload } = await requestBatchGeneration(getBuilderSnapshot());
+        if (!ok) throw new Error(payload.error || "Unable to generate batch.");
         setBatchResults(payload.results || []);
         setMessage(`${payload.results?.length || 0} variations ready. Pick your favorite.`);
       } catch (error) {
@@ -431,8 +554,142 @@ export function useWorkbench(props: {
       setDraftWasAutoRewritten(false);
       setAnalyzedMarkdownSnapshot(result.markdown);
       setBatchResults([]);
+      setBatchRatings({});
       setMessage(`Selected temperature ${result.temperature} variation. Edit sections or save.`);
     }
+  }
+
+  function handleSurpriseMe() {
+    const preset = buildDiscoveryPreset({
+      mode: discoveryMode,
+      preferences: discoveryPreferences,
+    });
+    const snapshot = getBuilderSnapshot({
+      brief: preset.brief,
+      notes: preset.notes,
+      sexualProfile: preset.sexualProfile,
+      selectedCharacters: [],
+      selectedTemplates: preset.selectedTemplates,
+      selectedBackstories: preset.selectedBackstories,
+      selectedScenarios: preset.selectedScenarios,
+      howTheyMet: preset.howTheyMet,
+      physicalProfile: preset.physicalProfile,
+      emotionalLogic: preset.emotionalLogic,
+      relationshipDynamic: preset.relationshipDynamic,
+      voiceProfile: preset.voiceProfile,
+      contrastNotes: preset.contrastNotes,
+      journalCategories: preset.journalCategories,
+      selectedKinks: preset.selectedKinks,
+      batchTemperatures: preset.batchTemperatures,
+    });
+
+    applySnapshot(snapshot, preset.summary);
+    setIsBatchMode(true);
+    setMessage(`Generating discovery candidates: ${preset.summary}`);
+    setIsWorking(true);
+    setBatchResults([]);
+    setBatchRatings({});
+    setGeneratedMarkdown("");
+    setDraftQualityReport(null);
+    setOriginalDraftQualityReport(null);
+    setDraftWasAutoRewritten(false);
+    setAnalyzedMarkdownSnapshot("");
+
+    void (async () => {
+      try {
+        const { ok, payload } = await requestBatchGeneration(snapshot);
+        if (!ok) throw new Error(payload.error || "Unable to generate discovery batch.");
+        setBatchResults(payload.results || []);
+        setMessage(`Discovery set ready: ${preset.summary}`);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Unable to generate discovery batch.");
+      } finally {
+        setIsWorking(false);
+      }
+    })();
+  }
+
+  function handleRemixBatchResult(index: number) {
+    const source = batchResults[index];
+    if (!source) {
+      return;
+    }
+
+    const preset = buildDiscoveryPreset({
+      mode: discoveryMode,
+      preferences: discoveryPreferences,
+      remixFingerprint: source.qualityReport.fingerprint,
+    });
+    const snapshot = getBuilderSnapshot({
+      brief: preset.brief,
+      notes: preset.notes,
+      sexualProfile: preset.sexualProfile,
+      selectedCharacters: [],
+      selectedTemplates: preset.selectedTemplates,
+      selectedBackstories: preset.selectedBackstories,
+      selectedScenarios: preset.selectedScenarios,
+      howTheyMet: preset.howTheyMet,
+      physicalProfile: preset.physicalProfile,
+      emotionalLogic: preset.emotionalLogic,
+      relationshipDynamic: preset.relationshipDynamic,
+      voiceProfile: preset.voiceProfile,
+      contrastNotes: preset.contrastNotes,
+      journalCategories: preset.journalCategories,
+      selectedKinks: preset.selectedKinks,
+      batchTemperatures: preset.batchTemperatures,
+    });
+
+    applySnapshot(snapshot, `${preset.summary} (remix)`);
+    setIsBatchMode(true);
+    setMessage("Remixing discovery candidate...");
+    setIsWorking(true);
+    setBatchResults([]);
+    setBatchRatings({});
+    setGeneratedMarkdown("");
+    setDraftQualityReport(null);
+    setOriginalDraftQualityReport(null);
+    setDraftWasAutoRewritten(false);
+    setAnalyzedMarkdownSnapshot("");
+
+    void (async () => {
+      try {
+        const { ok, payload } = await requestBatchGeneration(snapshot);
+        if (!ok) throw new Error(payload.error || "Unable to remix discovery batch.");
+        setBatchResults(payload.results || []);
+        setMessage(`Remix ready: ${preset.summary}`);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Unable to remix discovery batch.");
+      } finally {
+        setIsWorking(false);
+      }
+    })();
+  }
+
+  function handleRateBatchResult(index: number, reaction: DiscoveryReaction) {
+    if (!batchResults[index]) {
+      return;
+    }
+
+    setBatchRatings((current) => ({ ...current, [index]: reaction }));
+    setDiscoveryPreferences((current) =>
+      recordDiscoveryReaction(current, reaction, {
+        mode: discoveryMode,
+        selectedTemplates,
+        selectedBackstories,
+        selectedScenarios,
+        howTheyMet,
+        physicalProfile,
+        selectedKinks,
+      }),
+    );
+
+    setMessage(
+      reaction === "like"
+        ? "Liked. Future discovery seeds will lean closer to this vibe."
+        : reaction === "maybe"
+          ? "Marked as maybe. Future discovery seeds will treat this as a mild positive signal."
+          : "Passed. Future discovery seeds will drift away from this vibe.",
+    );
   }
 
   async function handleAnalyzeGeneratedDraft() {
@@ -448,8 +705,8 @@ export function useWorkbench(props: {
           selectedDocuments,
           selectedCharacters,
           selectedTemplates: resolveTemplatePrompts(selectedTemplates),
-          selectedBackstories,
-          selectedScenarios,
+          selectedBackstories: resolveBackstoryPrompts(selectedBackstories),
+          selectedScenarios: resolveScenarioPrompts(selectedScenarios),
           howTheyMet: resolveHowTheyMetPrompt(howTheyMet),
           physicalProfile,
           emotionalLogic,
@@ -618,6 +875,9 @@ export function useWorkbench(props: {
     originalDraftQualityReport,
     draftWasAutoRewritten,
     qualityReportIsStale,
+    discoveryMode,
+    discoverySeedSummary,
+    discoveryPreferenceCount: discoveryPreferences.totalRatings,
     message,
     isWorking,
     activeDocumentRecord,
@@ -625,6 +885,7 @@ export function useWorkbench(props: {
     isBatchMode,
     batchTemperatures,
     batchResults,
+    batchRatings,
     selectedTemplates,
     sexualProfile,
     selectedBackstories,
@@ -650,6 +911,7 @@ export function useWorkbench(props: {
     setNotes,
     setGeneratedMarkdown,
     setIsBatchMode,
+    setDiscoveryMode,
     setBatchTemperatures,
     setSelectedTemplates,
     setSexualProfile,
@@ -670,7 +932,10 @@ export function useWorkbench(props: {
     handleArchiveDocument,
     handleGenerate,
     handleBatchGenerate,
+    handleSurpriseMe,
     handleSelectBatchResult,
+    handleRemixBatchResult,
+    handleRateBatchResult,
     handleSaveCharacter,
     handleAnalyzeGeneratedDraft,
     handleUpdateCharacter,
