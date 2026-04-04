@@ -25,9 +25,10 @@ import {
   DEFAULT_VOICE_PROFILE,
 } from "@/lib/types";
 import { resolveTemplatePrompts } from "@/components/template-selector";
-import { resolveBackstoryPrompts } from "@/lib/backstory-architectures";
-import { resolveHowTheyMetPrompt } from "@/lib/how-they-met";
-import { resolveScenarioPrompts } from "@/lib/scenario-templates";
+import { BACKSTORY_ARCHITECTURES, resolveBackstoryPrompts } from "@/lib/backstory-architectures";
+import { HOW_THEY_MET_OPTIONS, resolveHowTheyMetPrompt } from "@/lib/how-they-met";
+import { SCENARIO_TEMPLATES, resolveScenarioPrompts } from "@/lib/scenario-templates";
+import { CHARACTER_TEMPLATES } from "@/lib/templates";
 import type { DiscoveryMode, DiscoveryPreferenceStore, DiscoveryReaction } from "@/lib/random-seed";
 import {
   buildDiscoveryPreset,
@@ -687,8 +688,6 @@ export function useWorkbench(props: {
     });
 
     // Apply concept fields to the builder without touching physical profile or kinks
-    setBrief(concept.brief);
-    setNotes(concept.notes);
     setSelectedTemplates(concept.selectedTemplates);
     setSelectedBackstories(concept.selectedBackstories);
     setSelectedScenarios(concept.selectedScenarios);
@@ -697,6 +696,7 @@ export function useWorkbench(props: {
     setRelationshipDynamic(concept.relationshipDynamic);
     setVoiceProfile(concept.voiceProfile);
     setJournalCategories(concept.journalCategories);
+    setNotes(concept.notes);
     setDiscoverySeedSummary(concept.summary);
 
     // Clear generation output but don't start generating
@@ -709,7 +709,64 @@ export function useWorkbench(props: {
     setAnalyzedMarkdownSnapshot("");
     setIsBatchMode(false);
 
-    setMessage(`Concept rolled: ${concept.summary}. Review the builder tabs, customize, then generate.`);
+    // Set a placeholder brief while the LLM generates a real concept
+    setBrief(`Generating concept: ${concept.summary}...`);
+    setMessage("Rolling concept...");
+    setIsWorking(true);
+
+    // Resolve IDs to names for the LLM
+    const templateNames = concept.selectedTemplates
+      .map((id) => CHARACTER_TEMPLATES.find((t) => t.id === id)?.name)
+      .filter(Boolean) as string[];
+    const backstoryName = BACKSTORY_ARCHITECTURES.find((b) => concept.selectedBackstories.includes(b.id))?.name ?? "";
+    const scenarioName = SCENARIO_TEMPLATES.find((s) => concept.selectedScenarios.includes(s.id))?.name ?? "";
+    const howTheyMetName = HOW_THEY_MET_OPTIONS.find((h) => h.id === concept.howTheyMet)?.name ?? "";
+
+    // Build physical hints from whatever the user has already set
+    const pp = physicalProfile;
+    const physicalParts: string[] = [];
+    if (pp.bodyType) physicalParts.push(pp.bodyType.replace(/-/g, " "));
+    if (pp.ethnicity) physicalParts.push(pp.ethnicity);
+    if (pp.ageRange) physicalParts.push(`age ${pp.ageRange}`);
+    if (pp.height) physicalParts.push(pp.height.replace(/-/g, " "));
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/generate/concept", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            seedSummary: concept.summary,
+            templateNames,
+            backstoryName,
+            scenarioName,
+            howTheyMetName,
+            emotionalLogic: {
+              wound: concept.emotionalLogic.wound,
+              armor: concept.emotionalLogic.armor,
+            },
+            physicalHints: physicalParts.join(", "),
+            mcName: mcProfile.name || "",
+            provider,
+          }),
+        });
+
+        const payload = (await response.json()) as { concept?: string; error?: string };
+        if (!response.ok || !payload.concept) {
+          // Fall back to the label-based brief
+          setBrief(concept.brief);
+          setMessage(`Concept rolled: ${concept.summary}. Review the builder tabs, customize, then generate.`);
+        } else {
+          setBrief(payload.concept);
+          setMessage(`Concept ready. Review the builder tabs, customize, then generate.`);
+        }
+      } catch {
+        setBrief(concept.brief);
+        setMessage(`Concept rolled: ${concept.summary}. Review the builder tabs, customize, then generate.`);
+      } finally {
+        setIsWorking(false);
+      }
+    })();
   }
 
   function handleRemixBatchResult(index: number) {
