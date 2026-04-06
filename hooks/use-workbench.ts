@@ -15,6 +15,7 @@ import type {
   ProviderSettings,
   RelationshipDynamic,
   VoiceProfile,
+  WorldbuildingSettings,
 } from "@/lib/types";
 import {
   DEFAULT_EMOTIONAL_LOGIC,
@@ -23,6 +24,7 @@ import {
   DEFAULT_PHYSICAL_PROFILE,
   DEFAULT_RELATIONSHIP_DYNAMIC,
   DEFAULT_VOICE_PROFILE,
+  DEFAULT_WORLDBUILDING_SETTINGS,
 } from "@/lib/types";
 import { resolveTemplatePrompts } from "@/components/template-selector";
 import { BACKSTORY_ARCHITECTURES, resolveBackstoryPrompts } from "@/lib/backstory-architectures";
@@ -95,6 +97,7 @@ export type WorkbenchState = {
   journalCategories: JournalCategories;
   selectedKinks: KinkPreference[];
   mcProfile: MCProfile;
+  worldbuilding: WorldbuildingSettings;
 };
 
 export type WorkbenchActions = {
@@ -122,6 +125,7 @@ export type WorkbenchActions = {
   setJournalCategories: Dispatch<SetStateAction<JournalCategories>>;
   setSelectedKinks: Dispatch<SetStateAction<KinkPreference[]>>;
   setMCProfile: Dispatch<SetStateAction<MCProfile>>;
+  setWorldbuilding: Dispatch<SetStateAction<WorldbuildingSettings>>;
   toggleDocumentSelection: (fileName: string) => void;
   toggleCharacterSelection: (fileName: string) => void;
   handleAddDocument: (formData: FormData) => void;
@@ -196,6 +200,7 @@ export function useWorkbench(props: {
   const [journalCategories, setJournalCategories] = useState<JournalCategories>(DEFAULT_JOURNAL_CATEGORIES);
   const [selectedKinks, setSelectedKinks] = useState<KinkPreference[]>([]);
   const [mcProfile, setMCProfile] = useState<MCProfile>(DEFAULT_MC_PROFILE);
+  const [worldbuilding, setWorldbuilding] = useState<WorldbuildingSettings>(DEFAULT_WORLDBUILDING_SETTINGS);
 
   // Load saved provider settings + per-provider API keys
   useEffect(() => {
@@ -328,6 +333,7 @@ export function useWorkbench(props: {
     journalCategories: JournalCategories;
     selectedKinks: KinkPreference[];
     mcProfile: MCProfile;
+    worldbuilding: WorldbuildingSettings;
     provider: ProviderSettings;
     batchTemperatures: number[];
   };
@@ -351,6 +357,7 @@ export function useWorkbench(props: {
       journalCategories,
       selectedKinks,
       mcProfile,
+      worldbuilding,
       provider,
       batchTemperatures,
       ...overrides,
@@ -376,6 +383,7 @@ export function useWorkbench(props: {
       journalCategories: snapshot.journalCategories,
       selectedKinks: snapshot.selectedKinks,
       mcProfile: snapshot.mcProfile,
+      worldbuilding: snapshot.worldbuilding,
       provider: snapshot.provider,
     };
   }
@@ -396,6 +404,7 @@ export function useWorkbench(props: {
     setContrastNotes(snapshot.contrastNotes);
     setJournalCategories(snapshot.journalCategories);
     setSelectedKinks(snapshot.selectedKinks);
+    setWorldbuilding(snapshot.worldbuilding);
     setBatchTemperatures(snapshot.batchTemperatures);
     setDiscoverySeedSummary(seedSummary);
   }
@@ -877,6 +886,7 @@ export function useWorkbench(props: {
           journalCategories,
           selectedKinks,
           mcProfile,
+          worldbuilding,
         }),
       });
       const payload = (await response.json()) as { qualityReport?: DraftQualityReport; error?: string };
@@ -1060,6 +1070,7 @@ export function useWorkbench(props: {
     journalCategories,
     selectedKinks,
     mcProfile,
+    worldbuilding,
   };
 
   const actions: WorkbenchActions = {
@@ -1087,6 +1098,7 @@ export function useWorkbench(props: {
     setJournalCategories,
     setSelectedKinks,
     setMCProfile,
+    setWorldbuilding,
     toggleDocumentSelection: (fileName) => toggle(fileName, selectedDocuments, setSelectedDocuments),
     toggleCharacterSelection: (fileName) => toggle(fileName, selectedCharacters, setSelectedCharacters),
     handleAddDocument,

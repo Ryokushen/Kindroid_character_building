@@ -20,6 +20,7 @@ import { MCProfileForm } from "./mc-profile-form";
 import { PhysicalAppearanceForm, FlirtationStylePills, AvailabilityStatusPills } from "./physical-profile-form";
 import { HowTheyMetSelector } from "./how-they-met-selector";
 import { KinkSelector } from "./kink-selector";
+import { WorldbuildingForm } from "./worldbuilding-form";
 
 const TABS = [
   { id: "concept", label: "Concept" },
@@ -206,6 +207,12 @@ export function BriefForm({
           <ScenarioSelector
             selected={state.selectedScenarios}
             setSelected={actions.setSelectedScenarios}
+          />
+
+          <WorldbuildingForm
+            worldbuilding={state.worldbuilding}
+            setWorldbuilding={actions.setWorldbuilding}
+            provider={state.provider}
           />
 
           <div className="space-y-2">

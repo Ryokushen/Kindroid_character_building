@@ -318,19 +318,44 @@ export function KindroidReadyView({
           </>
         )}
 
-        {/* === Journal Entries - each one separate === */}
-        {journals.length > 0 && (
-          <>
-            <Separator className="bg-border/40" />
-            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary px-1">
-              Journal Entries ({journals.length})
-            </p>
+        {/* === Journal Entries - split by Global vs Individual === */}
+        {journals.length > 0 && (() => {
+          const globalJournals = journals.filter((j) => j.isGlobal);
+          const individualJournals = journals.filter((j) => !j.isGlobal);
 
-            {journals.map((journal, i) => (
-              <JournalCopyField key={i} journal={journal} />
-            ))}
-          </>
-        )}
+          return (
+            <>
+              {globalJournals.length > 0 && (
+                <>
+                  <Separator className="bg-border/40" />
+                  <div className="px-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-accent">
+                      Global Journal Entries ({globalJournals.length})
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Paste into Kindroid&apos;s Global Journal section — shared across all characters in this world
+                    </p>
+                  </div>
+                  {globalJournals.map((journal, i) => (
+                    <JournalCopyField key={`global-${i}`} journal={journal} />
+                  ))}
+                </>
+              )}
+
+              {individualJournals.length > 0 && (
+                <>
+                  <Separator className="bg-border/40" />
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary px-1">
+                    {globalJournals.length > 0 ? "Individual " : ""}Journal Entries ({individualJournals.length})
+                  </p>
+                  {individualJournals.map((journal, i) => (
+                    <JournalCopyField key={`individual-${i}`} journal={journal} />
+                  ))}
+                </>
+              )}
+            </>
+          );
+        })()}
 
         {/* === Greeting Options - each one separate === */}
         {greetings.length > 0 && (

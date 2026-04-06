@@ -181,7 +181,9 @@ export function parseJournalEntries(rawContent: string): JournalEntry[] {
     const titleMatch = part.match(/^###\s+(.+)/m);
     if (!titleMatch) continue;
 
-    const title = titleMatch[1].trim();
+    const rawTitle = titleMatch[1].trim();
+    const isGlobal = /\[GLOBAL\]/i.test(rawTitle);
+    const title = rawTitle.replace(/\s*\[GLOBAL\]\s*/gi, "").trim();
     const bodyAfterTitle = part.slice(part.indexOf("\n") + 1);
     const { content } = extractCodeBlockContent(bodyAfterTitle);
     if (!content) continue;
@@ -189,7 +191,7 @@ export function parseJournalEntries(rawContent: string): JournalEntry[] {
     // Split into keywords line and entry text
     const { keywords, entryText } = splitJournalContent(content);
 
-    journals.push({ title, content, keywords, entryText });
+    journals.push({ title, content, keywords, entryText, isGlobal });
   }
 
   return journals;

@@ -66,6 +66,14 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 - KEYWORDS line format: "mom" "dad" "parents" (quoted, space-separated)
 - Entry format: factual paragraph about what the Kindroid knows
 
+**Global vs. Individual Journals**
+- GLOBAL journals contain shared world lore any character might reference (locations, history, factions, events). Mark these with [GLOBAL] in the journal title, e.g. "### Journal 5 — Memphis Beale Street [GLOBAL]"
+- INDIVIDUAL journals contain character-specific knowledge, secrets, or perspective-dependent lore (default — no tag needed)
+- When worldbuilding context is provided, generate BOTH types. Global journals use world-specific proper nouns as keywords (location names, local terms, custom vocabulary) — never generic words like "city" or "street"
+- Location journals follow this framework: name + brief description (1-2 sentences), sensory details that set tone, who lives there / social texture, what the place means to this specific character. Keywords = location name + any world-specific terms
+- Only the USER's messages trigger journal recall — having the Kin say a keyword will NOT pull up the entry
+- Design keywords to be specific and non-overlapping since only 3 global + 3 individual slots are available per message
+
 **Avatar Prompt (max 200 chars) — FACE ONLY**
 - Used by Kindroid's avatar generator for the profile picture
 - Describe ONLY from the face/neck up: facial features, hair, skin tone, expression, eye color, distinguishing marks
@@ -305,6 +313,7 @@ export function buildUserPrompt(input: {
   journalCategories?: import("@/lib/types").JournalCategories;
   selectedKinks?: import("@/lib/types").KinkPreference[];
   mcProfile?: import("@/lib/types").MCProfile;
+  worldbuilding?: import("@/lib/types").WorldbuildingSettings;
   contrastRequirements?: string[];
 }) {
   const parts: string[] = [];
@@ -470,6 +479,19 @@ export function buildUserPrompt(input: {
     parts.push("", "Scenario modifiers:", input.scenarioAdditions.join("\n"));
   }
 
+  // Worldbuilding context
+  const wb = input.worldbuilding;
+  if (wb && wb.enabled && (wb.locations || wb.sharedLore || wb.worldLexicon)) {
+    const wbParts: string[] = [];
+    wbParts.push(
+      `Generate ${wb.generateGlobalJournals ? "Global journal entries (marked [GLOBAL] in title)" : "location-aware journal entries"} for shared world lore alongside individual character journals.`,
+    );
+    if (wb.locations) wbParts.push(`Locations — create a journal entry for each:\n${wb.locations}`);
+    if (wb.sharedLore) wbParts.push(`Shared world lore (common knowledge any character would know):\n${wb.sharedLore}`);
+    if (wb.worldLexicon) wbParts.push(`World lexicon — use these as journal keywords (specific proper nouns and terms):\n${wb.worldLexicon}`);
+    parts.push("", "Worldbuilding context:", wbParts.join("\n\n"));
+  }
+
   if (input.contrastRequirements && input.contrastRequirements.length > 0) {
     parts.push(
       "",
@@ -552,6 +574,7 @@ async function generateCharacterDraftMarkdown(payload: GenerationPayload, contra
       journalCategories: payload.journalCategories,
       selectedKinks: payload.selectedKinks,
       mcProfile: payload.mcProfile,
+      worldbuilding: payload.worldbuilding,
       contrastRequirements,
     }),
   );
@@ -729,6 +752,7 @@ export async function buildPromptPreview(payload: GenerationPayload) {
     journalCategories: payload.journalCategories,
     selectedKinks: payload.selectedKinks,
     mcProfile: payload.mcProfile,
+    worldbuilding: payload.worldbuilding,
     contrastRequirements,
   });
 

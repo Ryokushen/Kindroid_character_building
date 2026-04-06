@@ -113,6 +113,31 @@ export type JournalCategories = {
   sexualHistory: boolean;
 };
 
+// --- Worldbuilding settings ---
+
+export type WorldbuildingSettings = {
+  enabled: boolean;
+  locations: string;
+  sharedLore: string;
+  worldLexicon: string;
+  generateGlobalJournals: boolean;
+};
+
+export const DEFAULT_WORLDBUILDING_SETTINGS: WorldbuildingSettings = {
+  enabled: false,
+  locations: "",
+  sharedLore: "",
+  worldLexicon: "",
+  generateGlobalJournals: true,
+};
+
+export type ResearchSuggestion = {
+  title: string;
+  keywords: string[];
+  entryText: string;
+  type: "location" | "lore" | "lexicon";
+};
+
 // --- Kink preferences ---
 
 export type KinkPreference =
@@ -164,6 +189,7 @@ export type GenerationPayload = {
   journalCategories: JournalCategories;
   selectedKinks: KinkPreference[];
   mcProfile: MCProfile;
+  worldbuilding?: WorldbuildingSettings;
   provider: ProviderSettings;
 };
 
@@ -256,6 +282,8 @@ export type JournalEntry = {
   keywords: string;
   /** Just the entry text (after "Entry:" prefix), used for character counting */
   entryText: string;
+  /** Whether this is a Global journal entry (shared world lore) vs Individual */
+  isGlobal: boolean;
 };
 
 export type GreetingEntry = {

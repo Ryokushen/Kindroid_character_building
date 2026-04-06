@@ -147,6 +147,72 @@ async function callAnthropic(
   return cleanModelOutput(content);
 }
 
+function normalizeResponsesUrl(baseUrl: string) {
+  const trimmed = baseUrl.trim().replace(/\/+$/, "");
+  if (!trimmed) throw new Error("Base URL is required.");
+  // Strip /chat/completions or /responses if already present, then add /responses
+  return trimmed.replace(/\/(chat\/completions|responses)$/, "") + "/responses";
+}
+
+/**
+ * Call xAI's Responses API with web search enabled.
+ * Only works with xAI provider — uses /v1/responses endpoint with tools.
+ */
+export async function callXAIWithSearch(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  userPrompt: string,
+) {
+  const endpoint = normalizeResponsesUrl(baseUrl);
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      instructions: systemPrompt,
+      input: [{ role: "user", content: userPrompt }],
+      tools: [{ type: "web_search" }],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`xAI search request failed (${response.status}): ${errorText.slice(0, 300)}`);
+  }
+
+  const data = (await response.json()) as {
+    output?: Array<{
+      type: string;
+      content?: Array<{ type: string; text?: string }>;
+    }>;
+  };
+
+  // Extract text from message items in the output array
+  const textParts: string[] = [];
+  for (const item of data.output ?? []) {
+    if (item.type === "message" && item.content) {
+      for (const block of item.content) {
+        if (block.type === "output_text" && block.text) {
+          textParts.push(block.text);
+        }
+      }
+    }
+  }
+
+  const content = textParts.join("\n").trim();
+  if (!content) {
+    throw new Error("The xAI search response did not contain any text.");
+  }
+
+  return cleanModelOutput(content);
+}
+
 export async function callModel(
   providerType: ProviderType,
   baseUrl: string,
