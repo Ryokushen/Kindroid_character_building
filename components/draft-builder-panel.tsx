@@ -98,7 +98,38 @@ export function DraftBuilderPanel({
         <ProviderSettings
           provider={state.provider}
           setProvider={actions.setProvider}
+          disabled={state.isWorking}
         />
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Backstory limit:</span>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => actions.setBackstoryTier("standard")}
+              className={cn(
+                "rounded-md border px-2.5 py-1 text-xs font-medium transition-all",
+                state.backstoryTier === "standard"
+                  ? "border-primary/40 bg-primary/10 text-primary shadow-sm"
+                  : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40",
+              )}
+            >
+              2500
+            </button>
+            <button
+              type="button"
+              onClick={() => actions.setBackstoryTier("extended")}
+              className={cn(
+                "rounded-md border px-2.5 py-1 text-xs font-medium transition-all",
+                state.backstoryTier === "extended"
+                  ? "border-primary/40 bg-primary/10 text-primary shadow-sm"
+                  : "border-border bg-muted/20 text-muted-foreground hover:bg-muted/40",
+              )}
+            >
+              5000
+            </button>
+          </div>
+        </div>
 
         <Separator className="bg-border/60" />
 

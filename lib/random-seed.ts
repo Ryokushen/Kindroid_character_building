@@ -455,6 +455,23 @@ function randomItem<T>(items: T[]) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+// Track recently picked indices per category to avoid consecutive repeats
+const recentPicks: Record<string, number[]> = {};
+
+function dedupRandomItem<T>(items: T[], category: string): T {
+  const recent = recentPicks[category] ?? [];
+  const available = items.filter((_, i) => !recent.includes(i));
+  const pool = available.length > 0 ? available : items;
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+  const pickedIndex = items.indexOf(picked);
+
+  // For small pools (3 items), track last 1; for larger pools, track last 2
+  const trackCount = items.length <= 3 ? 1 : 2;
+  recentPicks[category] = [...recent, pickedIndex].slice(-trackCount);
+
+  return picked;
+}
+
 function weightedPick(
   ids: string[],
   namespace: string,
@@ -585,10 +602,10 @@ export function buildDiscoveryPreset(input: {
   const scenarioId = weightedPick(MODE_SCENARIOS[input.mode], "scenario", input.preferences);
   const howTheyMet = weightedPick(MODE_HOW_THEY_MET[input.mode], "meet", input.preferences);
   const randomPhysical = pickPhysicalProfile(input.mode, input.preferences);
-  const emotionalLogic = randomItem(EMOTIONAL_PRESETS[input.mode]);
-  const relationshipDynamic = randomItem(RELATIONSHIP_PRESETS[input.mode]);
-  const voiceProfile = randomItem(VOICE_PRESETS[input.mode]);
-  const sexualPreset = randomItem(SEXUAL_PRESETS[input.mode]);
+  const emotionalLogic = dedupRandomItem(EMOTIONAL_PRESETS[input.mode], `emotional_${input.mode}`);
+  const relationshipDynamic = dedupRandomItem(RELATIONSHIP_PRESETS[input.mode], `relationship_${input.mode}`);
+  const voiceProfile = dedupRandomItem(VOICE_PRESETS[input.mode], `voice_${input.mode}`);
+  const sexualPreset = dedupRandomItem(SEXUAL_PRESETS[input.mode], `sexual_${input.mode}`);
   const includeSexualProfile = input.mode !== "romanceable" || Math.random() < 0.75;
   const summary = buildSummary(input.mode, templateIds, backstoryId, scenarioId, howTheyMet);
 
@@ -725,9 +742,9 @@ export function buildConceptSeed(input: {
   const backstoryId = weightedPick(MODE_BACKSTORIES[input.mode], "backstory", input.preferences);
   const scenarioId = weightedPick(MODE_SCENARIOS[input.mode], "scenario", input.preferences);
   const howTheyMet = weightedPick(MODE_HOW_THEY_MET[input.mode], "meet", input.preferences);
-  const emotionalLogic = randomItem(EMOTIONAL_PRESETS[input.mode]);
-  const relationshipDynamic = randomItem(RELATIONSHIP_PRESETS[input.mode]);
-  const voiceProfile = randomItem(VOICE_PRESETS[input.mode]);
+  const emotionalLogic = dedupRandomItem(EMOTIONAL_PRESETS[input.mode], `emotional_${input.mode}`);
+  const relationshipDynamic = dedupRandomItem(RELATIONSHIP_PRESETS[input.mode], `relationship_${input.mode}`);
+  const voiceProfile = dedupRandomItem(VOICE_PRESETS[input.mode], `voice_${input.mode}`);
   const summary = buildSummary(input.mode, templateIds, backstoryId, scenarioId, howTheyMet);
 
   const templateNames = templateIds

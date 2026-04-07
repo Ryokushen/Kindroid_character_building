@@ -19,29 +19,38 @@ Expects a JSON body shaped like the generation payload in [../lib/types.ts](../l
 - guided builder fields
 - `provider`
 
+Optional:
+
+- `backstoryLimit` — override backstory character limit (2500 default, 5000 for extended tier)
+
 Returns:
 
-- `{ markdown }` on success
+- `{ markdown, qualityReport, rewritten?, originalQualityReport? }` on success
 - `{ error }` with status `400` on validation or provider-call failure
+
+The route automatically runs quality analysis and, if overlap with existing characters is detected, applies a novelty rewrite pass.
 
 Implementation: [../app/api/generate/route.ts](../app/api/generate/route.ts)
 
 ### `POST /api/generate/batch`
 
-Runs multiple generations at different temperatures.
+Runs multiple generations at different temperatures with partial recovery.
 
 Additional input:
 
 - `temperatures: number[]`
+- `backstoryLimit?: number`
 
 Rules:
 
 - expects 2 to 4 temperature values
-- returns results in the same logical shape as a batch of single generations
+- uses `Promise.allSettled()` — individual temperature failures do not abort the batch
+- each successful result includes a quality report
 
 Returns:
 
-- `{ results: Array<{ temperature, markdown }> }`
+- `{ results: Array<{ temperature, markdown, qualityReport }>, failedTemperatures: number[] }`
+- If all temperatures fail, returns `400` with error
 
 Implementation: [../app/api/generate/batch/route.ts](../app/api/generate/batch/route.ts)
 
@@ -90,6 +99,64 @@ Returns:
 - `{ content }`
 
 Implementation: [../app/api/generate/section/route.ts](../app/api/generate/section/route.ts)
+
+### `POST /api/generate/analyze`
+
+Runs quality analysis on existing character markdown without generating new content.
+
+Required JSON body:
+
+- `markdown`
+
+Optional:
+
+- `currentCharacterFileName` — excludes this character from overlap comparison
+
+Returns:
+
+- `{ qualityReport }` — includes novelty, contrast, internal consistency, and sexual consistency scores, plus warnings with severity levels
+
+Implementation: [../app/api/generate/analyze/route.ts](../app/api/generate/analyze/route.ts)
+
+### `POST /api/generate/concept`
+
+Generates an LLM-refined character brief from a discovery mode seed.
+
+Required JSON body:
+
+- `seedSummary`
+- `templateNames`
+- `backstoryName`
+- `scenarioName`
+- `emotionalLogic`
+- `provider`
+
+Optional:
+
+- `physicalHints`
+- `mcName`
+- `howTheyMetName`
+
+Returns:
+
+- `{ concept }` — a freeform character brief string
+
+Implementation: [../app/api/generate/concept/route.ts](../app/api/generate/concept/route.ts)
+
+### `POST /api/generate/research`
+
+Searches the web via Grok and generates worldbuilding suggestions. Requires xAI provider.
+
+Required JSON body:
+
+- `query`
+- `provider`
+
+Returns:
+
+- `{ suggestions: Array<{ title, keywords, entryText, type }> }` — where type is `"location"`, `"lore"`, or `"lexicon"`
+
+Implementation: [../app/api/generate/research/route.ts](../app/api/generate/research/route.ts)
 
 ## Library routes
 

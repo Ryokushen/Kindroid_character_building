@@ -24,7 +24,7 @@ Section parsing lives in [../lib/section-parser.ts](../lib/section-parser.ts).
 
 The current Kindroid-oriented limits defined in code are:
 
-- Backstory: `2500`
+- Backstory: `2500` (standard) or `5000` (extended) — controlled by `BackstoryTier`
 - Response Directive: `250`
 - Key Memories: `1000`
 - Example Message: `750`
@@ -33,7 +33,7 @@ The current Kindroid-oriented limits defined in code are:
 - Journal entry: `500`
 - Greeting: `730`
 
-These limits are defined in [../lib/types.ts](../lib/types.ts).
+Static limits are defined in `KINDROID_LIMITS` in [../lib/types.ts](../lib/types.ts). The dynamic backstory limit is resolved via `getKindroidLimit(key, backstoryTier)` which returns the correct limit based on the selected tier. The system prompt in `buildSystemPrompt()` accepts `{ backstoryLimit?: number }` to match.
 
 ## Journal entries
 
@@ -47,11 +47,22 @@ Entry: Factual 3rd-person paragraph.
 ```
 ````
 
+Global journal entries (shared world lore) are marked with `[GLOBAL]` in the title:
+
+````text
+### Journal — Memphis History [GLOBAL]
+```text
+KEYWORDS: "beale street" "memphis" "blues"
+Entry: Beale Street runs east-west...
+```
+````
+
 The parser extracts:
 
-- title
+- title (with `[GLOBAL]` stripped)
+- `isGlobal` flag
 - raw keywords string
-- entry text
+- entry text (after `Entry:` prefix or everything after keywords line)
 
 ## Greeting options
 
@@ -65,14 +76,17 @@ The parser is intentionally tolerant:
 - it supports fenced code blocks
 - it merges continued journal content
 - it can recover orphaned journal sections in some malformed markdown
+- **unknown sections are preserved** — any H2 heading that doesn't match a known pattern is stored as a `custom_${slug}` key instead of being dropped, surviving save/reload round-trips
+- `reassembleMarkdown()` uses each section's `label` property as the heading, so custom sections retain their original heading text
 
 ## Why this structure matters
 
 The structured format enables:
 
-- section-level editing
-- section regeneration
-- character-limit validation
+- section-level editing and regeneration
+- character-limit validation (dynamic for backstory via `BackstoryTier`)
+- quality analysis and overlap detection via character fingerprinting
 - copy-paste transfer into Kindroid fields
+- undo/redo history tracking (markdown snapshot-based)
 
-If the format changes significantly, update both the system prompt and the parser.
+If the format changes significantly, update the system prompt (`lib/generation.ts`), the parser (`lib/section-parser.ts`), and the fingerprint extractor (`lib/character-fingerprint.ts`).

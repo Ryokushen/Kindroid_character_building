@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { CharacterSummary, JournalEntry } from "@/lib/types";
-import { KINDROID_LIMITS } from "@/lib/types";
+import { KINDROID_LIMITS, getKindroidLimit } from "@/lib/types";
+import type { BackstoryTier } from "@/lib/types";
 import { parseCharacterSections, parseJournalEntries, parseGreetingEntries } from "@/lib/section-parser";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -210,8 +211,10 @@ function JournalCopyField({
 
 export function KindroidReadyView({
   character,
+  backstoryTier,
 }: {
   character: CharacterSummary;
+  backstoryTier?: BackstoryTier;
 }) {
   const sections = useMemo(
     () => parseCharacterSections(character.content),
@@ -270,7 +273,7 @@ export function KindroidReadyView({
           label="Backstory"
           kindroidLabel="Backstory field"
           content={sectionMap.get("backstory") ?? ""}
-          charLimit={KINDROID_LIMITS.backstory}
+          charLimit={getKindroidLimit("backstory", backstoryTier)}
         />
 
         <CopyField

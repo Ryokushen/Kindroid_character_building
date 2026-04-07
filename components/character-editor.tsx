@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CharacterSummary, DraftQualityReport, ProviderSettings } from "@/lib/types";
 import { parseCharacterSections, reassembleMarkdown } from "@/lib/section-parser";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,62 @@ export function CharacterEditor({
     setQualityReport(null);
     setAnalyzedMarkdownSnapshot("");
   }
+
+  // Undo/redo history
+  const historyRef = useRef<string[]>([markdown]);
+  const historyIndexRef = useRef(0);
+  const isUndoRedoRef = useRef(false);
+
+  const pushHistory = useCallback((md: string) => {
+    historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+    historyRef.current.push(md);
+    if (historyRef.current.length > 20) historyRef.current.shift();
+    historyIndexRef.current = historyRef.current.length - 1;
+  }, []);
+
+  const canUndo = historyIndexRef.current > 0;
+  const canRedo = historyIndexRef.current < historyRef.current.length - 1;
+
+  const undo = useCallback(() => {
+    if (historyIndexRef.current <= 0) return;
+    historyIndexRef.current -= 1;
+    isUndoRedoRef.current = true;
+    setMarkdown(historyRef.current[historyIndexRef.current]);
+  }, []);
+
+  const redo = useCallback(() => {
+    if (historyIndexRef.current >= historyRef.current.length - 1) return;
+    historyIndexRef.current += 1;
+    isUndoRedoRef.current = true;
+    setMarkdown(historyRef.current[historyIndexRef.current]);
+  }, []);
+
+  // Track edits for history (skip undo/redo changes)
+  useEffect(() => {
+    if (isUndoRedoRef.current) {
+      isUndoRedoRef.current = false;
+      return;
+    }
+    if (markdown !== historyRef.current[historyIndexRef.current]) {
+      pushHistory(markdown);
+    }
+  }, [markdown, pushHistory]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+        e.preventDefault();
+        redo();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo, redo]);
 
   const sections = useMemo(
     () => parseCharacterSections(markdown),
@@ -210,6 +266,30 @@ export function CharacterEditor({
           Edit sections, regenerate, or add journals. Save when done.
         </p>
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={undo}
+            disabled={!canUndo}
+            className="h-7 px-1.5"
+            title="Undo (Ctrl+Z)"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4" />
+            </svg>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={redo}
+            disabled={!canRedo}
+            className="h-7 px-1.5"
+            title="Redo (Ctrl+Y)"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a5 5 0 00-5 5v2M21 10l-4-4M21 10l-4 4" />
+            </svg>
+          </Button>
           <Button
             size="sm"
             variant="outline"

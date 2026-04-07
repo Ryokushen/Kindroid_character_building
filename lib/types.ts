@@ -190,6 +190,7 @@ export type GenerationPayload = {
   selectedKinks: KinkPreference[];
   mcProfile: MCProfile;
   worldbuilding?: WorldbuildingSettings;
+  backstoryLimit?: number;
   provider: ProviderSettings;
 };
 
@@ -273,7 +274,8 @@ export type CharacterSectionKey =
   | "key_memories"
   | "journal_entries"
   | "greeting_options"
-  | "selfie_prompts";
+  | "selfie_prompts"
+  | `custom_${string}`;
 
 export type JournalEntry = {
   title: string;
@@ -291,6 +293,8 @@ export type GreetingEntry = {
   content: string;
 };
 
+export type BackstoryTier = "standard" | "extended";
+
 export const KINDROID_LIMITS: Partial<Record<CharacterSectionKey | string, number>> = {
   backstory: 2500,
   response_directive: 250,
@@ -301,6 +305,16 @@ export const KINDROID_LIMITS: Partial<Record<CharacterSectionKey | string, numbe
   journal_entry: 500,
   greeting: 730,
 };
+
+export function getKindroidLimit(
+  key: CharacterSectionKey | string,
+  backstoryTier: BackstoryTier = "standard",
+): number | undefined {
+  if (key === "backstory") {
+    return backstoryTier === "extended" ? 5000 : 2500;
+  }
+  return KINDROID_LIMITS[key];
+}
 
 export type CharacterSection = {
   key: CharacterSectionKey;
@@ -318,6 +332,7 @@ export type SectionRegenerationPayload = {
   fullCharacterContext: string;
   selectedDocuments: string[];
   provider: ProviderSettings;
+  backstoryLimit?: number;
 };
 
 // --- Default values ---

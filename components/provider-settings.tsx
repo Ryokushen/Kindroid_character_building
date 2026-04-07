@@ -75,9 +75,11 @@ const PROVIDER_PRESETS: Array<{
 export function ProviderSettings({
   provider,
   setProvider,
+  disabled = false,
 }: {
   provider: ProviderSettingsType;
   setProvider: Dispatch<SetStateAction<ProviderSettingsType>>;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -136,7 +138,7 @@ export function ProviderSettings({
         </svg>
       </CollapsibleTrigger>
 
-      <CollapsibleContent className="mt-3 space-y-3">
+      <CollapsibleContent className={cn("mt-3 space-y-3", disabled && "opacity-50 pointer-events-none")}>
         {/* Provider preset buttons */}
         <div className="space-y-1.5">
           <Label className="text-xs text-muted-foreground">Provider</Label>

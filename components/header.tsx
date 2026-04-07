@@ -4,10 +4,14 @@ import { cn } from "@/lib/utils";
 
 export function Header({
   message,
+  error,
   isWorking,
+  onClearError,
 }: {
   message: string;
+  error: string | null;
   isWorking: boolean;
+  onClearError: () => void;
 }) {
   return (
     <header className="mb-6">
@@ -47,6 +51,21 @@ export function Header({
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5">
+          <p className="text-xs text-red-400">{error}</p>
+          <button
+            type="button"
+            onClick={onClearError}
+            className="shrink-0 text-red-400/60 transition-colors hover:text-red-300"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
     </header>
   );
 }

@@ -11,6 +11,30 @@ import { parseCharacterSections, parseJournalEntries } from "@/lib/section-parse
 import { KINDROID_LIMITS } from "@/lib/types";
 import { stripMarkdown } from "@/lib/utils";
 
+export const FIX_SUGGESTIONS: Record<string, string> = {
+  "contrast-too-low": "Change at least 3 major axes: attachment style, power dynamic, emotional temperature, voice, or backstory architecture.",
+  "missing-name": "Add a # Character Name heading at the top of the document.",
+  "missing-overview": "Add a ## Overview section with bullet points (age, location, occupation, body type).",
+  "missing-backstory": "Add a ## Backstory section with behavioral code in 3rd person.",
+  "missing-response_directive": "Add a ## Response Directive section (under 250 chars) with tone/style directives.",
+  "missing-example_message": "Add a ## Example Message section in first person with *actions* and \"dialogue\".",
+  "missing-key_memories": "Add a ## Key Memories section with current factual context.",
+  "missing-journal_entries": "Add a ## Journal Entries section with ### sub-headings, KEYWORDS, and Entry text.",
+  "backstory-memory-duplication": "Move current-status facts to Key Memories; keep only personality-shaping history in Backstory.",
+  "backstory-journal-duplication": "Rewrite journals to reveal NEW details the backstory doesn't cover.",
+  "rd-em-mismatch": "Update the Example Message to demonstrate the communication style described in the Response Directive.",
+  "rd-em-tone-drift": "Align the Example Message tone with the Response Directive.",
+  "avatar-prompt-misuse": "Remove body/clothing from the Avatar Prompt. Keep only face, hair, skin tone, expression, and eye details.",
+  "selfie-description-clothing": "Remove specific clothing from the Selfie Description. Describe only body type, proportions, and physical features.",
+  "unexpected-sexual-journals": "Remove the sexual journal entries, or add a sexual profile/kink preferences to justify them.",
+  "missing-sexual-journals": "Add 3\u20135 dedicated sexual behavior journal entries that reflect the sexual profile and kink preferences.",
+  "too-many-sexual-journals": "Consolidate sexual journals to 3\u20135 focused entries. Merge similar ones.",
+  "sexual-menu-dump": "Select a character-appropriate subset of kinks. Not every character should have every kink.",
+  "sexual-emotional-contradiction": "Add trust/safety language to sexual journals. A guarded character needs earned trust before intense behavior.",
+  "severe-overlap": "Differentiate by changing at least 3 axes: attachment style, power dynamic, emotional temperature, voice, or backstory.",
+  "adjacent-overlap": "Change the voice profile, emotional wound, or flirtation style to create more distance from existing characters.",
+};
+
 type CompareResult = {
   score: number;
   matchedAxes: string[];

@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       journalCategories: body.journalCategories ?? DEFAULT_JOURNAL_CATEGORIES,
       selectedKinks: body.selectedKinks ?? [],
       mcProfile: body.mcProfile ?? DEFAULT_MC_PROFILE,
+      backstoryLimit: body.backstoryLimit,
       provider: {
         providerType: body.provider.providerType ?? "openai",
         providerLabel: body.provider.providerLabel ?? "Custom",

@@ -188,12 +188,42 @@ export function getSmartRecommendations(
     return getRecommendedDocumentNames(documents);
   }
 
+  // Synonym groups — map variations to a canonical form so brief words match more docs
+  const SYNONYMS: Record<string, string[]> = {
+    emotional: ["emotion", "feeling", "mood", "temperament"],
+    personality: ["character", "persona", "temperament"],
+    backstory: ["background", "history", "origin"],
+    journal: ["journals", "entries", "diary"],
+    memory: ["memories", "remember", "recall"],
+    greeting: ["greetings", "hello", "intro", "opening"],
+    voice: ["speech", "dialogue", "talking", "speaking"],
+    sexual: ["sex", "intimate", "erotic", "nsfw", "kink", "kinks"],
+    selfie: ["selfies", "image", "photo", "picture", "avatar"],
+    physical: ["body", "appearance", "looks", "physique"],
+    relationship: ["romance", "dating", "dynamic", "attachment"],
+    trauma: ["wound", "hurt", "pain"],
+    trigger: ["triggers", "triggering", "provoke"],
+    humor: ["funny", "comedy", "sarcasm", "witty"],
+    worldbuilding: ["world", "lore", "setting", "location"],
+  };
+
   // Extract meaningful words from the brief (3+ chars, lowercased)
-  const briefWords = brief
+  const rawWords = brief
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
     .filter((w) => w.length >= 3);
+
+  // Expand brief words through synonyms
+  const briefWords = new Set(rawWords);
+  for (const word of rawWords) {
+    for (const [canonical, synonyms] of Object.entries(SYNONYMS)) {
+      if (word === canonical || synonyms.includes(word)) {
+        briefWords.add(canonical);
+        for (const s of synonyms) briefWords.add(s);
+      }
+    }
+  }
 
   // Always-relevant core docs get a bonus
   const coreDocs = [
@@ -228,6 +258,29 @@ export function getSmartRecommendations(
       voice: ["personality", "behavior"],
       roleplay: ["behavior", "personality", "worldbuilding"],
       selfie: ["selfie", "v6selfie"],
+      emotional: ["personality", "behavior", "backstory", "effectivebs"],
+      trauma: ["backstory", "advancedbackstory", "effectivebs"],
+      wound: ["backstory", "advancedbackstory", "effectivebs"],
+      relationship: ["personality", "behavior", "backstory"],
+      attachment: ["personality", "behavior", "backstory"],
+      dynamic: ["personality", "behavior"],
+      conflict: ["personality", "behavior"],
+      sexual: ["behavior", "journals"],
+      kink: ["behavior", "journals"],
+      intimate: ["behavior", "journals"],
+      avatar: ["selfie", "v6selfie", "foundation"],
+      image: ["selfie", "v6selfie"],
+      photo: ["selfie", "v6selfie"],
+      physical: ["selfie", "v6selfie", "foundation"],
+      appearance: ["selfie", "v6selfie"],
+      body: ["selfie", "v6selfie"],
+      humor: ["personality", "behavior"],
+      sarcasm: ["personality", "behavior"],
+      speech: ["personality", "behavior"],
+      texting: ["personality", "behavior"],
+      worldbuilding: ["worldbuilding", "journals"],
+      location: ["worldbuilding", "journals"],
+      lore: ["worldbuilding", "journals"],
     };
 
     for (const [topic, docKeywords] of Object.entries(topicMap)) {

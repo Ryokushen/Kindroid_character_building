@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type {
+  BackstoryTier,
   BatchGenerationResult,
   CharacterSummary,
   DraftQualityReport,
@@ -73,6 +74,7 @@ export type WorkbenchState = {
   discoverySeedSummary: string;
   discoveryPreferenceCount: number;
   message: string;
+  error: string | null;
   isWorking: boolean;
   activeDocumentRecord: LibraryDocument | undefined;
   activeCharacterRecord: CharacterSummary | undefined;
@@ -98,6 +100,7 @@ export type WorkbenchState = {
   selectedKinks: KinkPreference[];
   mcProfile: MCProfile;
   worldbuilding: WorldbuildingSettings;
+  backstoryTier: BackstoryTier;
 };
 
 export type WorkbenchActions = {
@@ -126,6 +129,7 @@ export type WorkbenchActions = {
   setSelectedKinks: Dispatch<SetStateAction<KinkPreference[]>>;
   setMCProfile: Dispatch<SetStateAction<MCProfile>>;
   setWorldbuilding: Dispatch<SetStateAction<WorldbuildingSettings>>;
+  setBackstoryTier: Dispatch<SetStateAction<BackstoryTier>>;
   toggleDocumentSelection: (fileName: string) => void;
   toggleCharacterSelection: (fileName: string) => void;
   handleAddDocument: (formData: FormData) => void;
@@ -142,6 +146,7 @@ export type WorkbenchActions = {
   handleAnalyzeGeneratedDraft: () => Promise<DraftQualityReport | null>;
   handleUpdateCharacter: (fileName: string, markdown: string) => void;
   handleDeleteCharacter: (fileName: string) => void;
+  clearError: () => void;
   handleUpdateMetadata: (fileName: string, update: { tags?: string[]; favorite?: "toggle" }) => void;
 };
 
@@ -182,6 +187,7 @@ export function useWorkbench(props: {
     createEmptyDiscoveryPreferenceStore(),
   );
   const [message, setMessage] = useState("Select source docs, add your prompt, then generate a draft.");
+  const [error, setError] = useState<string | null>(null);
   const [isWorking, setIsWorking] = useState(false);
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchTemperatures, setBatchTemperatures] = useState<number[]>([0.6, 0.8, 1.0, 1.2]);
@@ -201,6 +207,7 @@ export function useWorkbench(props: {
   const [selectedKinks, setSelectedKinks] = useState<KinkPreference[]>([]);
   const [mcProfile, setMCProfile] = useState<MCProfile>(DEFAULT_MC_PROFILE);
   const [worldbuilding, setWorldbuilding] = useState<WorldbuildingSettings>(DEFAULT_WORLDBUILDING_SETTINGS);
+  const [backstoryTier, setBackstoryTier] = useState<BackstoryTier>("standard");
 
   // Load saved provider settings + per-provider API keys
   useEffect(() => {
@@ -384,6 +391,7 @@ export function useWorkbench(props: {
       selectedKinks: snapshot.selectedKinks,
       mcProfile: snapshot.mcProfile,
       worldbuilding: snapshot.worldbuilding,
+      backstoryLimit: backstoryTier === "extended" ? 5000 : 2500,
       provider: snapshot.provider,
     };
   }
@@ -410,6 +418,8 @@ export function useWorkbench(props: {
   }
 
   function handleAddDocument(formData: FormData) {
+    if (isWorking) return;
+    setError(null);
     setMessage("Adding repository document...");
     setIsWorking(true);
     void (async () => {
@@ -430,7 +440,9 @@ export function useWorkbench(props: {
           setActiveDocument(payload.document.fileName);
         }
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to add document.");
+        const msg = error instanceof Error ? error.message : "Unable to add document.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -470,12 +482,15 @@ export function useWorkbench(props: {
       ok: response.ok,
       payload: (await response.json()) as {
         results?: BatchGenerationResult[];
+        failedTemperatures?: number[];
         error?: string;
       },
     };
   }
 
   function handleArchiveDocument(fileName: string) {
+    if (isWorking) return;
+    setError(null);
     setMessage(`Archiving ${fileName}...`);
     setIsWorking(true);
     void (async () => {
@@ -497,7 +512,9 @@ export function useWorkbench(props: {
         }
         refreshFromPayload(payload);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to archive document.");
+        const msg = error instanceof Error ? error.message : "Unable to archive document.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -505,6 +522,8 @@ export function useWorkbench(props: {
   }
 
   function handleGenerate() {
+    if (isWorking) return;
+    setError(null);
     setMessage("Generating character draft...");
     setIsWorking(true);
     setBatchResults([]);
@@ -527,7 +546,9 @@ export function useWorkbench(props: {
             : "Draft ready. Review the sections, then save to the character library.",
         );
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to generate draft.");
+        const msg = error instanceof Error ? error.message : "Unable to generate draft.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -535,6 +556,8 @@ export function useWorkbench(props: {
   }
 
   function handleBatchGenerate() {
+    if (isWorking) return;
+    setError(null);
     setMessage(`Generating ${batchTemperatures.length} temperature variations...`);
     setIsWorking(true);
     setBatchResults([]);
@@ -549,9 +572,16 @@ export function useWorkbench(props: {
         const { ok, payload } = await requestBatchGeneration(getBuilderSnapshot());
         if (!ok) throw new Error(payload.error || "Unable to generate batch.");
         setBatchResults(payload.results || []);
-        setMessage(`${payload.results?.length || 0} variations ready. Pick your favorite.`);
+        const failedCount = payload.failedTemperatures?.length ?? 0;
+        setMessage(
+          failedCount > 0
+            ? `${payload.results?.length || 0} variations ready (${failedCount} failed). Pick your favorite.`
+            : `${payload.results?.length || 0} variations ready. Pick your favorite.`,
+        );
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to generate batch.");
+        const msg = error instanceof Error ? error.message : "Unable to generate batch.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -586,6 +616,8 @@ export function useWorkbench(props: {
   }
 
   function handleSurpriseMe() {
+    if (isWorking) return;
+    setError(null);
     const preset = buildDiscoveryPreset({
       mode: discoveryMode,
       preferences: discoveryPreferences,
@@ -627,9 +659,16 @@ export function useWorkbench(props: {
         const { ok, payload } = await requestBatchGeneration(snapshot);
         if (!ok) throw new Error(payload.error || "Unable to generate discovery batch.");
         setBatchResults(payload.results || []);
-        setMessage(`Discovery set ready: ${preset.summary}`);
+        const failedCount = payload.failedTemperatures?.length ?? 0;
+        setMessage(
+          failedCount > 0
+            ? `Discovery set ready: ${preset.summary} (${failedCount} temp${failedCount > 1 ? "s" : ""} failed)`
+            : `Discovery set ready: ${preset.summary}`,
+        );
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to generate discovery batch.");
+        const msg = error instanceof Error ? error.message : "Unable to generate discovery batch.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -637,6 +676,8 @@ export function useWorkbench(props: {
   }
 
   function handleSurpriseMeSingle() {
+    if (isWorking) return;
+    setError(null);
     const preset = buildDiscoveryPreset({
       mode: discoveryMode,
       preferences: discoveryPreferences,
@@ -683,7 +724,9 @@ export function useWorkbench(props: {
         setAnalyzedMarkdownSnapshot(payload.markdown || "");
         setMessage(`Discovery character ready: ${preset.summary}`);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to generate discovery character.");
+        const msg = error instanceof Error ? error.message : "Unable to generate discovery character.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -691,6 +734,8 @@ export function useWorkbench(props: {
   }
 
   function handleRollConcept() {
+    if (isWorking) return;
+    setError(null);
     const concept = buildConceptSeed({
       mode: discoveryMode,
       preferences: discoveryPreferences,
@@ -779,6 +824,8 @@ export function useWorkbench(props: {
   }
 
   function handleRemixBatchResult(index: number) {
+    if (isWorking) return;
+    setError(null);
     const source = batchResults[index];
     if (!source) {
       return;
@@ -826,9 +873,16 @@ export function useWorkbench(props: {
         const { ok, payload } = await requestBatchGeneration(snapshot);
         if (!ok) throw new Error(payload.error || "Unable to remix discovery batch.");
         setBatchResults(payload.results || []);
-        setMessage(`Remix ready: ${preset.summary}`);
+        const failedCount = payload.failedTemperatures?.length ?? 0;
+        setMessage(
+          failedCount > 0
+            ? `Remix ready: ${preset.summary} (${failedCount} temp${failedCount > 1 ? "s" : ""} failed)`
+            : `Remix ready: ${preset.summary}`,
+        );
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to remix discovery batch.");
+        const msg = error instanceof Error ? error.message : "Unable to remix discovery batch.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -901,7 +955,9 @@ export function useWorkbench(props: {
 
       return payload.qualityReport ?? null;
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to analyze draft.");
+      const msg = error instanceof Error ? error.message : "Unable to analyze draft.";
+      setMessage(msg);
+      setError(msg);
       return null;
     }
   }
@@ -946,7 +1002,9 @@ export function useWorkbench(props: {
         refreshFromPayload(payload);
         if (payload.character) setActiveCharacter(payload.character.fileName);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to save character.");
+        const msg = error instanceof Error ? error.message : "Unable to save character.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -973,7 +1031,9 @@ export function useWorkbench(props: {
         refreshFromPayload(payload);
         if (payload.character) setActiveCharacter(payload.character.fileName);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to update character.");
+        const msg = error instanceof Error ? error.message : "Unable to update character.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -1002,7 +1062,9 @@ export function useWorkbench(props: {
         }
         refreshFromPayload(payload);
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to delete character.");
+        const msg = error instanceof Error ? error.message : "Unable to delete character.";
+        setMessage(msg);
+        setError(msg);
       } finally {
         setIsWorking(false);
       }
@@ -1050,6 +1112,7 @@ export function useWorkbench(props: {
     discoverySeedSummary,
     discoveryPreferenceCount: discoveryPreferences.totalRatings,
     message,
+    error,
     isWorking,
     activeDocumentRecord,
     activeCharacterRecord,
@@ -1071,6 +1134,7 @@ export function useWorkbench(props: {
     selectedKinks,
     mcProfile,
     worldbuilding,
+    backstoryTier,
   };
 
   const actions: WorkbenchActions = {
@@ -1099,6 +1163,7 @@ export function useWorkbench(props: {
     setSelectedKinks,
     setMCProfile,
     setWorldbuilding,
+    setBackstoryTier,
     toggleDocumentSelection: (fileName) => toggle(fileName, selectedDocuments, setSelectedDocuments),
     toggleCharacterSelection: (fileName) => toggle(fileName, selectedCharacters, setSelectedCharacters),
     handleAddDocument,
@@ -1116,6 +1181,7 @@ export function useWorkbench(props: {
     handleUpdateCharacter,
     handleDeleteCharacter,
     handleUpdateMetadata,
+    clearError: () => setError(null),
   };
 
   return { state, actions };

@@ -1,6 +1,7 @@
 "use client";
 
 import type { DraftQualityReport } from "@/lib/types";
+import { FIX_SUGGESTIONS } from "@/lib/quality-checks";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -108,6 +109,11 @@ export function QualityReportCard({
               )}
             >
               {warning.message}
+              {(FIX_SUGGESTIONS[warning.code] || (warning.code.startsWith("section-over-limit-") && "Trim this section to fit within the Kindroid character limit.")) && (
+                <p className="mt-1 text-[10px] italic text-muted-foreground/80">
+                  Fix: {FIX_SUGGESTIONS[warning.code] || "Trim this section to fit within the Kindroid character limit."}
+                </p>
+              )}
             </div>
           ))}
         </div>

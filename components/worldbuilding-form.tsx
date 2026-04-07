@@ -36,13 +36,19 @@ export function WorldbuildingForm({
   const isXAI = provider.providerType === "xai";
 
   function update(field: keyof WorldbuildingSettings, value: string | boolean) {
-    setWorldbuilding((c) => ({ ...c, [field]: value }));
+    setWorldbuilding((c) => ({
+      ...c,
+      [field]: value,
+      // Auto-enable when content is added to a text field
+      ...(field !== "enabled" && field !== "generateGlobalJournals" && typeof value === "string" && value.trim() ? { enabled: true } : {}),
+    }));
   }
 
   function appendToField(field: "locations" | "sharedLore" | "worldLexicon", text: string) {
     setWorldbuilding((c) => ({
       ...c,
       [field]: c[field] ? `${c[field]}\n\n${text}` : text,
+      enabled: true, // Auto-enable when content is accepted
     }));
   }
 
@@ -120,6 +126,21 @@ export function WorldbuildingForm({
         </svg>
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-3 space-y-3">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="worldbuilding-enabled"
+            checked={worldbuilding.enabled}
+            onCheckedChange={(checked) => update("enabled", !!checked)}
+          />
+          <Label htmlFor="worldbuilding-enabled" className="text-xs text-foreground cursor-pointer">
+            Include worldbuilding in character generation
+          </Label>
+        </div>
+        {hasContent && !worldbuilding.enabled && (
+          <p className="text-[10px] text-amber-400">
+            Worldbuilding content exists but won&apos;t be used in generation.
+          </p>
+        )}
         <p className="text-xs text-muted-foreground leading-relaxed">
           Build a shared world for multiple characters. <strong>Global journals</strong> contain location lore, history, and world facts
           that any character can reference. <strong>Individual journals</strong> stay character-specific.

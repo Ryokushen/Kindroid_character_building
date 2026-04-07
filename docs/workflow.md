@@ -11,7 +11,7 @@ Use the library panel on the main workbench page to:
 - archive outdated documents
 - assign tags and favorites
 
-The selected documents become the source context for generation.
+The selected documents become the source context for generation. The app provides smart recommendations based on your brief — it expands keywords through synonym groups and matches against 31 topic categories to surface relevant docs.
 
 ## 2. Configure the model provider
 
@@ -21,55 +21,89 @@ The app currently supports:
 
 - OpenAI
 - Anthropic
-- xAI
+- xAI (Grok) — also supports web search for worldbuilding research
 
-Provider settings are persisted locally in browser storage.
+Provider settings are persisted locally in browser storage. Provider controls are locked during generation to prevent mid-request changes.
 
-## 3. Build the character brief
+## 3. Set backstory tier
 
-You can start with a plain freeform brief, then optionally add structured inputs:
+Choose between standard (2500 chars) and extended (5000 chars) backstory limits. This affects the system prompt, character limit display, and quality validation.
 
-- personality templates
-- backstory architectures
-- scenario modifiers
-- how-they-met presets
-- physical profile
-- emotional logic
-- relationship dynamic
-- voice profile
-- sexual profile
-- journal categories
-- kink preferences
-- male main-character profile
+## 4. Build the character brief
 
-These guided inputs are assembled into the final prompt before the model call.
+You can start with a plain freeform brief, then optionally add structured inputs across four tabs:
 
-## 4. Add references
+**Core:** personality templates, backstory architectures, scenario modifiers, how-they-met presets
 
-You can include existing saved characters as reference material. These are not copied directly; they are used as examples of structure, tone, and specificity.
+**Profile:** physical profile (body type, height, age, ethnicity, features), emotional logic (wound/armor/crack/contradiction), relationship dynamic (power/temperature/attachment/wants)
 
-## 5. Generate
+**Voice & Kinks:** voice profile (texting style, humor, verbal tics), sexual profile, kink preferences, journal categories
+
+**World:** worldbuilding (locations, shared lore, world lexicon), MC profile (male main-character name, appearance, personality)
+
+These guided inputs are assembled into the final prompt before the model call. Empty sections add zero tokens.
+
+### Discovery mode (alternative to manual building)
+
+Instead of building a brief manually, you can use discovery mode:
+
+- **Surprise Me x4** — generates 4 randomized character concepts at different temperatures, with preference learning from your ratings (like/maybe/pass)
+- **Surprise Me x1** — generates a single randomized character
+- **Roll Concept** — randomizes builder fields without generating, then uses the LLM to refine the brief
+- **Remix** — generates variations based on the fingerprint of an existing batch result
+
+Three modes are available: romanceable, high-heat, and wild-card. Physical profile, kinks, and sexual profile can be locked across rolls.
+
+The discovery system tracks your preferences over time and avoids consecutive repeats of emotional logic, relationship dynamic, and voice presets.
+
+## 5. Add references
+
+You can include existing saved characters as reference material. These are not copied directly; they are used for contrast enforcement — the quality system ensures the new character differs on at least 3 major axes.
+
+## 6. Generate
 
 There are several generation modes:
 
-- standard single draft generation
-- batch generation across multiple temperatures
+- standard single draft generation (with automatic quality analysis and novelty rewrite)
+- batch generation across multiple temperatures (with partial recovery — if one temperature fails, the others still return)
 - prompt preview without a model call
 - section regeneration for refining a single part of the character
 
-## 6. Refine output
+## 7. Refine output
 
-Once a draft is generated, you can:
+Once a draft is generated, the quality report card shows:
 
-- edit the full markdown directly
-- regenerate individual sections
-- inspect the parsed Kindroid-ready fields
+- **Four scores** — novelty, contrast, internal consistency, sexual consistency (each 0-100)
+- **Warnings** with severity levels (info/warn/severe) and actionable fix suggestions
+- **Overlap detection** — closest matches to existing saved characters with matched axes
+- **Save gate** — severe issues block saving until resolved
 
-## 7. Save to the character library
+You can then:
 
-Saving writes the markdown into `characters/`. The `/characters` page provides a dedicated view for browsing, editing, and preparing saved characters for copy-paste into Kindroid.
+- edit individual sections via section cards
+- regenerate individual sections with full character context
+- edit the full raw markdown directly
+- **undo/redo** edits with toolbar buttons or Ctrl+Z / Ctrl+Y
+- re-analyze the draft after edits
 
-## 8. Archive instead of delete where possible
+## 8. Save to the character library
+
+Saving writes the markdown into `characters/`. The quality gate runs analysis before saving — drafts with severe issues (missing sections, high overlap, avatar prompt misuse, etc.) must be revised first.
+
+The `/characters` page provides a dedicated view for browsing, editing, and preparing saved characters for copy-paste into Kindroid.
+
+## 9. Worldbuilding research
+
+When using xAI (Grok), you can research locations, cultural elements, and world lore:
+
+1. Enter a query in the worldbuilding form
+2. Grok searches the web and generates journal entry suggestions
+3. Accept individual suggestions or all at once — they populate locations, lore, and lexicon fields
+4. Worldbuilding auto-enables when content is accepted
+
+Accepted worldbuilding content is included in the generation prompt and generates Global journal entries marked with `[GLOBAL]`.
+
+## 10. Archive instead of delete where possible
 
 - repository documents are moved to `PDF-Text/.archive/`
 - deleted characters are moved to `characters/archive/`

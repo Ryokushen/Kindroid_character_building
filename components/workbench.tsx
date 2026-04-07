@@ -24,7 +24,7 @@ export function Workbench({
 
   return (
     <main className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:py-8">
-      <Header message={state.message} isWorking={state.isWorking} />
+      <Header message={state.message} error={state.error} isWorking={state.isWorking} onClearError={actions.clearError} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.2fr_1fr] lg:items-start">
         <LibraryPanel

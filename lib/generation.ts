@@ -11,7 +11,8 @@ import { callModel } from "@/lib/model-client";
 import { rewriteDraftForNovelty } from "@/lib/novelty-pass";
 import { analyzeDraftQuality } from "@/lib/quality-checks";
 
-export function buildSystemPrompt() {
+export function buildSystemPrompt(options?: { backstoryLimit?: number }) {
+  const backstoryLimit = options?.backstoryLimit ?? 2500;
   return `You are an expert Kindroid character designer with deep knowledge of the Kindroid platform.
 
 ## KINDROID PLATFORM KNOWLEDGE
@@ -20,7 +21,7 @@ Kindroid uses LLM versions V6, V7, V8, and V8.5 (current default). The character
 
 ### FIELD SPECIFICATIONS & LIMITS
 
-**Backstory (max ~2500 chars) — STRONG INFLUENCE**
+**Backstory (max ~${backstoryLimit} chars) — STRONG INFLUENCE**
 - Foundation of personality and behavior. The LLM uses backstory as behavioral code.
 - Write behavioral patterns with cause/effect logic, NOT vague labels.
 - BAD: "She's possessive and passionate"
@@ -261,7 +262,7 @@ Count carefully. When you write "(X characters)" after a section, X must be the 
 **Hard limits — sections OVER these limits will be rejected:**
 | Field | Max Characters |
 |-------|---------------|
-| Backstory | 2500 |
+| Backstory | ${backstoryLimit} |
 | Response Directive (RD) | 250 |
 | Key Memories | 1000 |
 | Example Message (EM) | 750 |
@@ -555,7 +556,7 @@ async function generateCharacterDraftMarkdown(payload: GenerationPayload, contra
     payload.provider.apiKey,
     payload.provider.model,
     payload.provider.temperature,
-    buildSystemPrompt(),
+    buildSystemPrompt({ backstoryLimit: payload.backstoryLimit }),
     buildUserPrompt({
       brief: payload.brief,
       notes: payload.notes,
@@ -654,7 +655,7 @@ export async function generateSectionDraft(payload: SectionRegenerationPayload) 
   const documentContext = await buildDocumentContext(payload.selectedDocuments);
 
   const limitMap: Record<string, number> = {
-    backstory: 2500,
+    backstory: payload.backstoryLimit ?? 2500,
     response_directive: 250,
     key_memories: 1000,
     example_message: 750,

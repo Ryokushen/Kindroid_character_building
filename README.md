@@ -4,22 +4,17 @@ Local-first Next.js app for building Kindroid characters against a curated repos
 
 ## What it does
 
-- Uses `PDF-Text/` as the live knowledge library for prompting
-- Lets you add, archive, tag, and favorite repository documents
-- Generates character drafts from selected docs plus optional reference characters
-- Supports guided character building with structured inputs for backstory, relationship dynamic, voice, emotional logic, scenarios, and MC profile
-- Supports batch generation across multiple temperatures
-- Supports section-level regeneration and prompt preview flows
-- Saves generated characters into `characters/`
-- Provides a dedicated saved-character library at `/characters`
+**Build** — guided character builder with backstory architecture, emotional logic, relationship dynamics, voice profile, physical profile, sexual profile, kinks, worldbuilding, and MC profile. Or skip the manual work and use Discovery Mode to generate randomized concepts with preference learning.
 
-## Current provider support
+**Generate** — single drafts, batch temperature sweeps (with partial recovery), section-level regeneration, and Grok web search for worldbuilding research. Supports 2500 or 5000 char backstory tiers.
 
-- OpenAI
-- Anthropic
-- xAI
+**Analyze** — automatic quality scoring (novelty, contrast, consistency), overlap detection against saved characters, actionable fix suggestions, and auto-rewrite for overlapping drafts. Severe issues block saving until resolved.
 
-Provider settings are configured in-app and stored locally in the browser. See [docs/providers.md](docs/providers.md).
+**Manage** — curated document library with tags, favorites, and synonym-expanded smart recommendations. Saved character library with inline editing, undo/redo, and Kindroid-ready copy-paste transfer view.
+
+## Providers
+
+OpenAI, Anthropic, and xAI (Grok). Configured in-app, stored in browser localStorage. See [docs/providers.md](docs/providers.md).
 
 ## Run locally
 

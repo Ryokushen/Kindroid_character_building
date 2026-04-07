@@ -103,7 +103,29 @@ function pushSection(sections: CharacterSection[], heading: string, body: string
   // Handle "continued" sections that should merge with their parent
   const normalizedHeading = heading.replace(/\s*\(continued\)$/i, "");
   const match = matchSectionKey(normalizedHeading);
+
   if (!match) {
+    // Preserve unknown sections with a slugified key
+    const slug = normalizedHeading
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, "");
+    const customKey = `custom_${slug}` as CharacterSectionKey;
+
+    const existing = sections.find((s) => s.key === customKey);
+    if (existing) {
+      const trimmed = body.trim();
+      if (trimmed) existing.content += "\n\n" + trimmed;
+      return;
+    }
+
+    const { content, isCodeBlock } = extractCodeBlockContent(body);
+    sections.push({
+      key: customKey,
+      label: normalizedHeading,
+      content,
+      isCodeBlock,
+    });
     return;
   }
 

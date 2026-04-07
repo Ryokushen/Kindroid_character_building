@@ -16,16 +16,18 @@ function getCharLimit(key: CharacterSectionKey): number | undefined {
 export function CharacterSectionCard({
   section,
   isRegenerating,
+  charLimitOverride,
   onContentChange,
   onRegenerate,
 }: {
   section: CharacterSection;
   isRegenerating: boolean;
+  charLimitOverride?: number;
   onContentChange: (key: string, content: string) => void;
   onRegenerate: (key: string) => void;
 }) {
   const [open, setOpen] = useState(true);
-  const charLimit = getCharLimit(section.key);
+  const charLimit = charLimitOverride ?? getCharLimit(section.key);
   const charCount = section.content.length;
   const isOverLimit = charLimit ? charCount > charLimit : false;
   const isNearLimit = charLimit ? charCount > charLimit * 0.9 : false;
