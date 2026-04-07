@@ -99,10 +99,12 @@ To modify a saved character without regenerating from scratch:
 1. Select the character and switch to the **Redesign** tab
 2. Describe what you want to change in natural language
 3. Click "Ask me about it" — the LLM reads the character and asks 3-5 clarifying questions
-4. Answer the questions and review the suggested sections to modify (toggle any off to protect them)
-5. Click "Redesign" — only the selected sections are rewritten, everything else is preserved
+4. Answer the questions (optional — you can skip any) and review the section checklist (toggle any off to protect them)
+5. Click "Redesign" — only the checked sections are rewritten, everything else is preserved
 6. Review the changes (changed sections are highlighted) and click "Apply changes" or "Discard"
 7. Use "Revert" after applying if you want to restore the original
+
+If the LLM doesn't suggest specific sections, a default checklist of common sections is shown automatically.
 
 This uses a selective merge — the LLM returns a full rewrite but only user-approved sections are replaced in the final output.
 

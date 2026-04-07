@@ -183,7 +183,7 @@ The "Surprise Me" system (`lib/random-seed.ts`) generates randomized character c
 
 The Redesign tab (`components/character-redesigner.tsx`) lets users modify saved characters via a two-phase LLM flow (`lib/redesign.ts`):
 
-1. **Probe phase** — user describes desired changes in natural language. The LLM reads the full character, returns 3-5 clarifying questions and identifies which sections need modification (with reasons). Users can toggle sections on/off before proceeding.
+1. **Probe phase** — user describes desired changes in natural language. The LLM reads the full character, returns 3-5 clarifying questions and identifies which sections need modification (with reasons). If the LLM doesn't return section suggestions (JSON parse failure), a default set of 6 common sections is shown. Users can toggle sections on/off before proceeding. Answering questions is optional — unanswered questions are sent as empty strings.
 2. **Execute phase** — LLM rewrites the character with the change request, Q&A answers, and section list. Server-side `mergeRedesign()` enforces selective merge — only user-approved sections are replaced, everything else is preserved byte-for-byte from the original.
 
 The merge follows the same `parseCharacterSections` / `reassembleMarkdown` pattern as `lib/novelty-pass.ts:mergeTargetedRewrite()` but with a dynamic section set. The redesigner includes revert support (restores pre-redesign content) and integrates with the existing character save flow via `handleUpdateCharacter`.

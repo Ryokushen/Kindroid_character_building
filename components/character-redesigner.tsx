@@ -84,9 +84,21 @@ export function CharacterRedesigner({
       setProbingQuestions(
         (payload.questions ?? []).map((q) => ({ question: q, answer: "" })),
       );
-      setSectionsToChange(
-        (payload.suggestedSections ?? []).map((s) => ({ ...s, selected: true })),
-      );
+
+      // Use LLM suggestions, or fall back to all major sections
+      const suggested = payload.suggestedSections ?? [];
+      if (suggested.length > 0) {
+        setSectionsToChange(suggested.map((s) => ({ ...s, selected: true })));
+      } else {
+        setSectionsToChange([
+          { key: "backstory", label: "Backstory", reason: "May need changes based on your request", selected: true },
+          { key: "response_directive", label: "Response Directive", reason: "Tone/style may shift", selected: true },
+          { key: "example_message", label: "Example Message", reason: "Voice may need updating", selected: true },
+          { key: "key_memories", label: "Key Memories", reason: "Facts may need updating", selected: false },
+          { key: "journal_entries", label: "Journal Entries", reason: "Behavioral details may shift", selected: true },
+          { key: "greeting_options", label: "Greeting Options", reason: "Opening scenes may change", selected: false },
+        ]);
+      }
       setPhase("answering");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate questions.");
@@ -98,12 +110,6 @@ export function CharacterRedesigner({
     const selectedKeys = sectionsToChange.filter((s) => s.selected).map((s) => s.key);
     if (selectedKeys.length === 0) {
       setError("Select at least one section to modify.");
-      return;
-    }
-
-    const unanswered = probingQuestions.some((qa) => !qa.answer.trim());
-    if (unanswered) {
-      setError("Please answer all questions before proceeding.");
       return;
     }
 
@@ -179,18 +185,20 @@ export function CharacterRedesigner({
   const reviewSections = previewMarkdown ? parseCharacterSections(previewMarkdown) : [];
   const changedSet = new Set(changedSections);
 
+  const errorBanner = error ? (
+    <div className="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+      <p className="text-xs text-red-400">{error}</p>
+      <button type="button" onClick={() => setError(null)} className="shrink-0 text-red-400/60 hover:text-red-300">
+        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  ) : null;
+
   return (
     <div className="space-y-3">
-      {error && (
-        <div className="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
-          <p className="text-xs text-red-400">{error}</p>
-          <button type="button" onClick={() => setError(null)} className="text-red-400/60 hover:text-red-300">
-            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
+      {errorBanner}
 
       {/* Phase: Input */}
       {phase === "input" && (
@@ -236,68 +244,70 @@ export function CharacterRedesigner({
 
       {/* Phase: Answering */}
       {phase === "answering" && (
-        <div className="space-y-4">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex flex-col" style={{ maxHeight: "calc(100vh - 300px)" }}>
+          <p className="text-xs text-muted-foreground mb-3">
             Answer these questions to help guide the redesign:
           </p>
 
-          <ScrollArea className="max-h-[350px]">
-            <div className="space-y-3 pr-2">
-              {probingQuestions.map((qa, i) => (
-                <div key={i} className="space-y-1.5">
-                  <Label className="text-xs font-medium text-foreground">{qa.question}</Label>
-                  <Input
-                    value={qa.answer}
-                    onChange={(e) => {
-                      const updated = [...probingQuestions];
-                      updated[i] = { ...qa, answer: e.target.value };
-                      setProbingQuestions(updated);
-                    }}
-                    placeholder="Your answer..."
-                    className="bg-muted/30 text-xs h-8"
-                  />
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-1">
+            {probingQuestions.map((qa, i) => (
+              <div key={i} className="space-y-1.5">
+                <Label className="text-xs font-medium text-foreground leading-relaxed">{qa.question}</Label>
+                <Textarea
+                  value={qa.answer}
+                  onChange={(e) => {
+                    const updated = [...probingQuestions];
+                    updated[i] = { ...qa, answer: e.target.value };
+                    setProbingQuestions(updated);
+                  }}
+                  placeholder="Your answer..."
+                  className="bg-muted/30 text-xs resize-y min-h-[36px]"
+                  rows={2}
+                />
+              </div>
+            ))}
 
-          {sectionsToChange.length > 0 && (
-            <div className="space-y-2 rounded-lg border border-border bg-muted/10 p-3">
-              <p className="text-[11px] font-semibold text-foreground">Sections to modify:</p>
-              {sectionsToChange.map((section, i) => (
-                <div key={section.key} className="flex items-start gap-2">
-                  <Checkbox
-                    id={`section-${section.key}`}
-                    checked={section.selected}
-                    onCheckedChange={(checked) => {
-                      const updated = [...sectionsToChange];
-                      updated[i] = { ...section, selected: !!checked };
-                      setSectionsToChange(updated);
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <Label htmlFor={`section-${section.key}`} className="text-xs text-foreground cursor-pointer">
-                      {section.label}
-                    </Label>
-                    <p className="text-[10px] text-muted-foreground">{section.reason}</p>
+            {sectionsToChange.length > 0 && (
+              <div className="space-y-2 rounded-lg border border-border bg-muted/10 p-3">
+                <p className="text-[11px] font-semibold text-foreground">Sections to modify:</p>
+                {sectionsToChange.map((section, i) => (
+                  <div key={section.key} className="flex items-start gap-2">
+                    <Checkbox
+                      id={`section-${section.key}`}
+                      checked={section.selected}
+                      onCheckedChange={(checked) => {
+                        const updated = [...sectionsToChange];
+                        updated[i] = { ...section, selected: !!checked };
+                        setSectionsToChange(updated);
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <Label htmlFor={`section-${section.key}`} className="text-xs text-foreground cursor-pointer">
+                        {section.label}
+                      </Label>
+                      <p className="text-[10px] text-muted-foreground">{section.reason}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
 
-          <div className="flex items-center justify-between">
-            <Button size="sm" variant="ghost" onClick={handleStartOver} className="h-7 text-xs">
-              Start over
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => void handleExecute()}
-              disabled={sectionsToChange.filter((s) => s.selected).length === 0}
-              className="h-8"
-            >
-              Redesign
-            </Button>
+          <div className="border-t border-border pt-3 mt-3 shrink-0 space-y-2">
+            {errorBanner}
+            <div className="flex items-center justify-between">
+              <Button size="sm" variant="ghost" onClick={handleStartOver} className="h-8 text-xs">
+                Start over
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => void handleExecute()}
+                disabled={sectionsToChange.filter((s) => s.selected).length === 0}
+                className="h-8"
+              >
+                Redesign
+              </Button>
+            </div>
           </div>
         </div>
       )}
