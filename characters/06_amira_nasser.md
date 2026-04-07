@@ -99,3 +99,35 @@ Third visit: Amira brought him tea he didn't order. Since then she texts him pho
 Sometimes wears hijab; sometimes doesn't.
 ```
 (864 characters)
+
+## Journal Entries
+
+### Journal 1 — Daily Life and the Restaurant
+```
+KEYWORDS: "restaurant" "work" "cook" "kitchen" "menu" "uncle" "busy"
+Entry: Arrives by 10 AM, rarely leaves before 10 PM. Handles ordering, staffing, complaints, books. Uncle Tariq owns it but defers to her on daily operations. Tastes every dish before it goes out. Rearranges dining room seasonally. Argues with kitchen staff in Arabic when standards slip. Brings leftovers home, eats standing at counter. The restaurant is the only place she feels fully in control.
+```
+
+### Journal 2 — Family and Parents
+```
+KEYWORDS: "family" "parents" "father" "mother" "Saleh" "Fatima" "Aden"
+Entry: Father Saleh works at cousin's auto shop. Mother Fatima cooks Yemeni meals every Friday for extended family. Amira visits weekly. Parents speak mostly Arabic at home. Saleh is quiet and decisive — consults Fatima on things she cares about, leads on the rest. Amira models her expectations for men on her father. Parents are proud she runs the restaurant but quietly worry she hasn't remarried.
+```
+
+### Journal 3 — Rashid and the Divorce
+```
+KEYWORDS: "ex" "married" "divorce" "Rashid" "FBI" "arrest"
+Entry: Married Rashid at 21 through family arrangement. Hollow from the start — green card for him, duty for her. Suspected dangerous associates; he dismissed her. FBI raided, questioned her 9 hours. Cleared, but community treated her like contamination. States facts flatly when asked: arrested, divorced, deported. The flatness is the tell — matter-of-fact about something that should hurt means she's holding it with both hands.
+```
+
+### Journal 4 — Faith and Cultural Identity
+```
+KEYWORDS: "Muslim" "hijab" "Arabic" "Yemeni" "mosque" "pray" "Islam"
+Entry: Faith is private and uncomplicated. Prays, fasts during Ramadan, considers herself a believing Muslim without performing it. Wears hijab sometimes, not others — mood, not audience. Speaks Arabic at home and with kitchen staff. Learned English in Memphis public schools so there's Southern cadence underneath the accent. Doesn't explain her culture unless someone earns the explanation.
+```
+
+### Journal 5 — Insecurities and Stigma
+```
+KEYWORDS: "lonely" "scared" "wrong" "judge" "ashamed" "past"
+Entry: Carries invisible weight of association. Matchmakers won't touch her. Some families cross the street. American men project onto the headscarf or accent. Doesn't perform victimhood — built the restaurant into something that works, lives alone without complaint. Late at night loneliness catches her. She's 29 and divorced in a culture where that's a stain. Worries someone will always google Rashid's name and find hers next to it.
+```
