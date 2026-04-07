@@ -20,13 +20,13 @@ npm run build      # Production build (also verifies TypeScript)
 
 ```
 app/                    # Next.js app router pages + API routes
-  api/generate/         # POST: generate, batch, section, analyze, concept, preview, research
+  api/generate/         # POST: generate, batch, section, analyze, concept, preview, research, redesign
   api/characters/       # GET/POST/PATCH/DELETE character files
   api/library/          # GET/POST docs, archive, metadata
-components/             # 34 client components (all "use client")
+components/             # 35 client components (all "use client")
   ui/                   # 15 shadcn/ui primitives (DO NOT edit manually)
 hooks/                  # use-workbench.ts — central state + actions
-lib/                    # Business logic (18 files)
+lib/                    # Business logic (19 files)
   generation.ts         # System prompt builder, user prompt builder
   model-client.ts       # callModel() — multi-provider LLM adapter
   types.ts              # All TypeScript types + default values
@@ -34,6 +34,7 @@ lib/                    # Business logic (18 files)
   quality-checks.ts     # Draft quality analysis + FIX_SUGGESTIONS map
   character-fingerprint.ts  # Character fingerprinting + overlap detection
   novelty-pass.ts       # Auto-rewrite overlapping drafts
+  redesign.ts           # Two-phase character redesign (probe questions + selective rewrite)
   random-seed.ts        # Discovery mode presets + preference learning
   templates.ts          # 8 personality templates
   backstory-architectures.ts  # 7 backstory patterns
@@ -54,7 +55,7 @@ characters/             # Saved character .md files
 ```
 page.tsx (server) → Workbench (client) → useWorkbench hook → child components
                                               ↓
-                                    fetch /api/generate (or /batch, /section, /concept)
+                                    fetch /api/generate (or /batch, /section, /concept, /redesign)
                                               ↓
                                     generation.ts → buildSystemPrompt() + buildUserPrompt()
                                               ↓
@@ -76,6 +77,7 @@ page.tsx (server) → Workbench (client) → useWorkbench hook → child compone
 | `/api/generate/concept` | POST | LLM-powered concept generation for Roll Concept |
 | `/api/generate/preview` | POST | Preview assembled prompt without generating |
 | `/api/generate/research` | POST | Grok web search for worldbuilding research (xAI only) |
+| `/api/generate/redesign` | POST | Two-phase character redesign (probe questions + selective rewrite) |
 | `/api/characters` | POST/PATCH/DELETE | Character CRUD |
 | `/api/library` | GET/POST | Document listing and upload |
 | `/api/library/archive` | POST | Archive a document |
@@ -117,8 +119,9 @@ Workbench
       Undo/Redo buttons (+ Ctrl+Z/Y keyboard shortcuts)
   CharacterPanel
     CharacterList
-    Tabs: KindroidReadyView | CharacterEditor | CharacterPreview
+    Tabs: KindroidReadyView | CharacterEditor | CharacterRedesigner | CharacterPreview
       CharacterEditor (section cards + add journal + undo/redo)
+      CharacterRedesigner (probe → answer → selective rewrite → review)
 ```
 
 ### State Management
@@ -175,6 +178,15 @@ The "Surprise Me" system (`lib/random-seed.ts`) generates randomized character c
 - **Roll Concept**: generates builder presets without triggering generation, then calls `/api/generate/concept` for LLM-refined brief
 - **Locked fields**: physical profile, kinks, and sexual profile can be locked across discovery rolls
 - **Remix**: generates variations based on fingerprint of an existing batch result
+
+### Character Redesign
+
+The Redesign tab (`components/character-redesigner.tsx`) lets users modify saved characters via a two-phase LLM flow (`lib/redesign.ts`):
+
+1. **Probe phase** — user describes desired changes in natural language. The LLM reads the full character, returns 3-5 clarifying questions and identifies which sections need modification (with reasons). Users can toggle sections on/off before proceeding.
+2. **Execute phase** — LLM rewrites the character with the change request, Q&A answers, and section list. Server-side `mergeRedesign()` enforces selective merge — only user-approved sections are replaced, everything else is preserved byte-for-byte from the original.
+
+The merge follows the same `parseCharacterSections` / `reassembleMarkdown` pattern as `lib/novelty-pass.ts:mergeTargetedRewrite()` but with a dynamic section set. The redesigner includes revert support (restores pre-redesign content) and integrates with the existing character save flow via `handleUpdateCharacter`.
 
 ### Guided Character Building
 

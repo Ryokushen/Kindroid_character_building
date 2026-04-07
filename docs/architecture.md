@@ -44,7 +44,7 @@ It composes three main panels:
 
 There is also a dedicated saved-character page at [../app/characters/page.tsx](../app/characters/page.tsx).
 
-The project has 34 client components plus 15 shadcn/ui primitives (49 total).
+The project has 35 client components plus 15 shadcn/ui primitives (50 total).
 
 ### State
 
@@ -69,7 +69,7 @@ Concurrency safety: all async handlers check `if (isWorking) return` before star
 
 Current route groups:
 
-- `app/api/generate/` — 7 routes
+- `app/api/generate/` — 8 routes
 - `app/api/library/` — 3 routes
 - `app/api/characters/` — 1 route (POST/PATCH/DELETE)
 
@@ -82,6 +82,7 @@ Generate routes:
 - LLM-powered concept generation (for Roll Concept)
 - prompt preview without a model call
 - Grok web search research (xAI only, for worldbuilding)
+- two-phase character redesign (probe questions + selective rewrite)
 
 See [api-routes.md](api-routes.md) for full route documentation.
 
@@ -97,6 +98,9 @@ The `lib/` directory contains 18 modules:
 - [../lib/quality-checks.ts](../lib/quality-checks.ts) — `analyzeDraftQuality()`, `FIX_SUGGESTIONS` map for actionable fix guidance
 - [../lib/character-fingerprint.ts](../lib/character-fingerprint.ts) — `extractCharacterFingerprint()`, overlap detection, contrast line builder
 - [../lib/novelty-pass.ts](../lib/novelty-pass.ts) — `rewriteDraftForNovelty()` auto-rewrite for overlapping drafts
+
+**Character redesign:**
+- [../lib/redesign.ts](../lib/redesign.ts) — two-phase redesign (probe questions + selective rewrite), `mergeRedesign()`, `detectChangedSections()`
 
 **Discovery system:**
 - [../lib/random-seed.ts](../lib/random-seed.ts) — discovery mode presets, `buildDiscoveryPreset()`, `buildConceptSeed()`, preference learning with deduplication

@@ -10,6 +10,8 @@ Local-first Next.js app for building Kindroid characters against a curated repos
 
 **Analyze** — automatic quality scoring (novelty, contrast, consistency), overlap detection against saved characters, actionable fix suggestions, and auto-rewrite for overlapping drafts. Severe issues block saving until resolved.
 
+**Redesign** — modify existing characters with a two-phase LLM flow: describe changes, answer probing questions, then selectively rewrite only the sections that need to change.
+
 **Manage** — curated document library with tags, favorites, and synonym-expanded smart recommendations. Saved character library with inline editing, undo/redo, and Kindroid-ready copy-paste transfer view.
 
 ## Providers

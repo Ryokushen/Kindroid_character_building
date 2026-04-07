@@ -92,7 +92,21 @@ Saving writes the markdown into `characters/`. The quality gate runs analysis be
 
 The `/characters` page provides a dedicated view for browsing, editing, and preparing saved characters for copy-paste into Kindroid.
 
-## 9. Worldbuilding research
+## 9. Redesign existing characters
+
+To modify a saved character without regenerating from scratch:
+
+1. Select the character and switch to the **Redesign** tab
+2. Describe what you want to change in natural language
+3. Click "Ask me about it" — the LLM reads the character and asks 3-5 clarifying questions
+4. Answer the questions and review the suggested sections to modify (toggle any off to protect them)
+5. Click "Redesign" — only the selected sections are rewritten, everything else is preserved
+6. Review the changes (changed sections are highlighted) and click "Apply changes" or "Discard"
+7. Use "Revert" after applying if you want to restore the original
+
+This uses a selective merge — the LLM returns a full rewrite but only user-approved sections are replaced in the final output.
+
+## 10. Worldbuilding research
 
 When using xAI (Grok), you can research locations, cultural elements, and world lore:
 
@@ -103,7 +117,7 @@ When using xAI (Grok), you can research locations, cultural elements, and world 
 
 Accepted worldbuilding content is included in the generation prompt and generates Global journal entries marked with `[GLOBAL]`.
 
-## 10. Archive instead of delete where possible
+## 11. Archive instead of delete where possible
 
 - repository documents are moved to `PDF-Text/.archive/`
 - deleted characters are moved to `characters/archive/`

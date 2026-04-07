@@ -9,6 +9,7 @@ import { CharacterList } from "./character-list";
 import { CharacterPreview } from "./character-preview";
 import { KindroidReadyView } from "./kindroid-ready-view";
 import { CharacterEditor } from "./character-editor";
+import { CharacterRedesigner } from "./character-redesigner";
 
 export function CharacterPanel({
   characters,
@@ -62,6 +63,9 @@ export function CharacterPanel({
               <TabsTrigger value="edit" className="text-xs">
                 Edit
               </TabsTrigger>
+              <TabsTrigger value="redesign" className="text-xs">
+                Redesign
+              </TabsTrigger>
               <TabsTrigger value="raw" className="text-xs">
                 Raw Markdown
               </TabsTrigger>
@@ -73,6 +77,14 @@ export function CharacterPanel({
 
             <TabsContent value="edit">
               <CharacterEditor
+                character={activeCharacterRecord}
+                provider={provider}
+                onSave={(markdown) => onUpdateCharacter(activeCharacterRecord.fileName, markdown)}
+              />
+            </TabsContent>
+
+            <TabsContent value="redesign">
+              <CharacterRedesigner
                 character={activeCharacterRecord}
                 provider={provider}
                 onSave={(markdown) => onUpdateCharacter(activeCharacterRecord.fileName, markdown)}

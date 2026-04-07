@@ -158,6 +158,44 @@ Returns:
 
 Implementation: [../app/api/generate/research/route.ts](../app/api/generate/research/route.ts)
 
+### `POST /api/generate/redesign`
+
+Two-phase character redesign endpoint. Discriminated by a `phase` field.
+
+**Phase `"probe"`** — generates clarifying questions and identifies sections to modify.
+
+Required JSON body:
+
+- `phase: "probe"`
+- `changeRequest`
+- `characterMarkdown`
+- `provider`
+
+Returns:
+
+- `{ questions: string[], suggestedSections: Array<{ key, label, reason }> }`
+
+**Phase `"execute"`** — rewrites the character with selective merge.
+
+Required JSON body:
+
+- `phase: "execute"`
+- `changeRequest`
+- `characterMarkdown`
+- `probingAnswers: Array<{ question, answer }>`
+- `sectionsToChange: string[]`
+- `provider`
+
+Optional:
+
+- `backstoryLimit`
+
+Returns:
+
+- `{ markdown, changedSections }` — merged result preserving unchanged sections byte-for-byte
+
+Implementation: [../app/api/generate/redesign/route.ts](../app/api/generate/redesign/route.ts)
+
 ## Library routes
 
 ### `GET /api/library`

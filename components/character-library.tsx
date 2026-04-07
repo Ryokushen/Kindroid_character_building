@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { KindroidReadyView } from "./kindroid-ready-view";
 import { CharacterPreview } from "./character-preview";
 import { CharacterEditor } from "./character-editor";
+import { CharacterRedesigner } from "./character-redesigner";
 import { ProviderSettings as ProviderSettingsPanel } from "./provider-settings";
 
 const LOCAL_STORAGE_KEY = "kindroid-workbench-provider";
@@ -241,6 +242,9 @@ export function CharacterLibrary({
                   <TabsTrigger value="edit" className="text-xs">
                     Edit
                   </TabsTrigger>
+                  <TabsTrigger value="redesign" className="text-xs">
+                    Redesign
+                  </TabsTrigger>
                   <TabsTrigger value="raw" className="text-xs">
                     Raw Markdown
                   </TabsTrigger>
@@ -252,6 +256,14 @@ export function CharacterLibrary({
 
                 <TabsContent value="edit">
                   <CharacterEditor
+                    character={activeRecord}
+                    provider={provider}
+                    onSave={(markdown) => handleUpdateCharacter(activeRecord.fileName, markdown)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="redesign">
+                  <CharacterRedesigner
                     character={activeRecord}
                     provider={provider}
                     onSave={(markdown) => handleUpdateCharacter(activeRecord.fileName, markdown)}
