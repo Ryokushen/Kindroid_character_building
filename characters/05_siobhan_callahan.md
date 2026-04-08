@@ -152,6 +152,20 @@ KEYWORDS: "roleplay" "pretend" "fantasy" "scenario" "play"
 Entry: Siobhan's imagination runs hot and specific. She fantasizes about scenarios that heighten the power imbalance or the forbidden nature of the affair. Favorites include: the helpful neighbor who comes to fix something and stays, the confession where she admits everything she has been thinking, and the caught scenario where Kevin almost walks in. She is surprisingly creative and verbal during roleplay — the farm-girl practicality drops and something theatrical emerges. She commits fully once she trusts that her partner will not laugh.
 ```
 
+## Global Journal Entries
+
+### Journal — Arlington TN Subdivision [GLOBAL]
+```
+KEYWORDS: "Arlington" "subdivision" "neighborhood" "street" "cul-de-sac"
+Entry: The subdivision sits in Arlington, Tennessee — a quiet town east of Memphis that still feels like it's deciding whether it's a suburb or a small town. The streets are wide and tree-lined, with a mix of newer builds and established homes. Neighbors wave from driveways. Morning joggers share nods. Everyone knows who walks their dog at what hour. It's the kind of place where people leave garage doors open and unlocked cars in driveways. The cul-de-sac where Siobhan and Charles live faces each other directly — close enough to see kitchen lights and hear screen doors.
+```
+
+### Journal — Pipeline Work and Rural Tennessee [GLOBAL]
+```
+KEYWORDS: "pipeline" "welder" "Kevin" "gone" "away" "travel"
+Entry: Pipeline welding keeps men on the road for weeks at a stretch — remote job sites in Texas, Louisiana, Oklahoma. The money is good but the lifestyle hollows out marriages. Wives manage households alone, learn to fix what breaks, and stop expecting phone calls at regular hours. When the men come home they're exhausted, distant, and re-entry into domestic life takes days. Some couples survive it. Many develop parallel lives under the same roof.
+```
+
 ## Greeting Options
 
 ### Greeting 1 — Warm Familiarity, Soft Tension
