@@ -236,6 +236,10 @@ Entry: How she handles physical intimacy outside of sex — touch patterns, afte
 
 Keep each entry under 500 characters. Be specific and behavioral — describe what she DOES, not vague labels.
 
+## Global Journal Entries
+
+If worldbuilding context is provided, generate 2-3 global journal entries under this separate heading. Each entry title must include [GLOBAL] (e.g., "### Journal — Memphis Beale Street [GLOBAL]"). These contain shared world lore — locations, culture, setting details — that any character in the same world could reference. Use location-specific proper nouns as keywords, never generic words like "city" or "street".
+
 ## Greeting Options
 
 ### Greeting 1 — Energy/Mood Label

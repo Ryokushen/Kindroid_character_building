@@ -210,7 +210,7 @@ Additional builder features:
 ### Character Output
 
 Generated characters follow this section order:
-`# Name` → `## Overview` → `## Backstory` → `## Avatar Description` → `## Face Detail` → `## Response Directive` → `## Example Message` → `## Key Memories` → `## Journal Entries` → `## Greeting Options`
+`# Name` → `## Overview` → `## Backstory` → `## Avatar Prompt` → `## Selfie Description` → `## Response Directive` → `## Example Message` → `## Key Memories` → `## Journal Entries` → `## Sexual Behavior Journals` (conditional) → `## Global Journal Entries` (conditional) → `## Greeting Options`
 
 The **Kindroid Transfer view** parses saved characters into individual copyable fields matching Kindroid's interface, with character count indicators and dynamic backstory limit display.
 

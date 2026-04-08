@@ -9,14 +9,15 @@ The generator and parser expect a character file to contain most or all of these
 - `# Character Name`
 - `## Overview`
 - `## Backstory`
-- `## Avatar Prompt`
-- `## Selfie Description`
+- `## Avatar Prompt` (face only, under 200 chars)
+- `## Selfie Description` (full body, under 800 chars)
 - `## Response Directive (RD)`
 - `## Example Message (EM)`
 - `## Key Memories`
 - `## Journal Entries`
+- `## Sexual Behavior Journals` (conditional — only when sexual profile or kink input provided)
+- `## Global Journal Entries` (conditional — only when worldbuilding context provided, entries marked `[GLOBAL]`)
 - `## Greeting Options`
-- `## Selfie / Image Prompts` (optional)
 
 Section parsing lives in [../lib/section-parser.ts](../lib/section-parser.ts).
 
@@ -63,6 +64,14 @@ The parser extracts:
 - `isGlobal` flag
 - raw keywords string
 - entry text (after `Entry:` prefix or everything after keywords line)
+
+## Sexual behavior journals
+
+When a sexual profile or kink preferences are provided, the generator produces 3-5 dedicated sexual behavior journal entries under a separate `## Sexual Behavior Journals` heading. These use the same `### Journal N — Topic` / `KEYWORDS` / `Entry` format as regular journals but focus on sexual preferences, dynamics, and behaviors.
+
+## Global journal entries
+
+When worldbuilding context is provided, the generator produces global journal entries under `## Global Journal Entries`. These contain shared world lore (locations, culture, setting details) that any character in the same world can reference. Global entries are marked with `[GLOBAL]` in the title and use location-specific proper nouns as keywords.
 
 ## Greeting options
 
